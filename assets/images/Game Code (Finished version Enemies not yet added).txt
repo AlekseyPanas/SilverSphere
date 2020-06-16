@@ -1,0 +1,1245 @@
+import simplegui
+import math 
+
+#Player Animation images
+player = simplegui.load_image("https://i.imgur.com/vcTLpCt.png")
+player_up = simplegui.load_image("https://i.imgur.com/Q8VUIGc.png")
+player_down = simplegui.load_image("https://i.imgur.com/cCxobgT.png")
+player_right = simplegui.load_image("https://i.imgur.com/f0u7qjs.png")
+player_left = simplegui.load_image("https://i.imgur.com/oKIuMsP.png")
+
+#Tile Images
+floor_tile = simplegui.load_image("https://i.imgur.com/9WwXZbr.png")
+blank_tile = simplegui.load_image("")
+iron_tile = simplegui.load_image("https://i.imgur.com/3EQOaV2.png")
+
+vortex_tile = simplegui.load_image("https://i.imgur.com/2yaLCsK.png")
+vortex_open = simplegui.load_image("https://i.imgur.com/Hx33xcm.png")
+vortex_close = simplegui.load_image("https://i.imgur.com/VrSNKRu.png")
+ice_x_tile = simplegui.load_image("https://i.imgur.com/eZTc8ju.png")
+box_x_tile = simplegui.load_image("https://i.imgur.com/MvZW5Pt.png")
+
+#Box and Ice Entity Images
+box_image = simplegui.load_image("https://i.imgur.com/nesyBbt.png")
+ice_image = simplegui.load_image("https://i.imgur.com/CBWIPFU.png")
+
+#Border Image
+border_image = simplegui.load_image("https://i.imgur.com/76T3lFo.png")
+water_image = simplegui.load_image("https://i.imgur.com/bjSe3zB.png")
+marble_image = simplegui.load_image("https://i.imgur.com/188LgEV.png")
+water_shadow = simplegui.load_image("https://i.imgur.com/fJFeNUQ.png")
+ball_shadow = simplegui.load_image("https://i.imgur.com/OQbjE1O.png")
+menu_image = simplegui.load_image("https://i.imgur.com/CN1QBFz.png")
+menu_sky = simplegui.load_image("https://i.imgur.com/2i1YfUU.png")
+exit_icon = simplegui.load_image("https://i.imgur.com/mlLcOvi.png")
+
+explosion_image = simplegui.load_image("http://commondatastorage.googleapis.com/codeskulptor-assets/explosion.hasgraphics.png")
+
+#Button Images
+play_button_image = simplegui.load_image("https://i.imgur.com/UDppv1v.png")
+inlevel_play_button_image = simplegui.load_image("https://i.imgur.com/MSuv7Jf.png")
+next_level_button_image = simplegui.load_image("https://i.imgur.com/jYDEm0o.png")
+levelsel_button_image = simplegui.load_image("https://i.imgur.com/d9AQ9R8.png")
+
+class Stack:
+    def __init__(self):        
+        self.items = []
+        
+    def isEmpty(self):
+        return self.items == []
+    
+    def push(self, item):       
+        self.items.append(item)
+        
+    def yank(self, item):       
+        if item in self.items:
+            self.items.remove(item)
+            
+    def peek(self):        
+        if(len(self.items) > 0):
+            return self.items[-1]
+        else:
+            return ""
+        
+    def size(self):      
+        return len(self.items) 
+
+class Player:
+    def __init__(self, coords, image, image_up, image_down, image_right, image_left):
+        #position and grid coords
+        self.coords = coords
+        self.pos = [(self.coords[0] * 50) + 40, (self.coords[1] * 50) + 40]
+                
+        #Images for stationary and movement animations
+        self.image = image     
+        self.img_l = image_left
+        self.img_r = image_right
+        self.img_u = image_up
+        self.img_d = image_down
+        
+        #Image and Animation info
+        self.time = 4
+        self.image_center = [130,130]
+        self.image_size = [260,260]
+        self.desired_image_size = [51,51]
+        #When moving, changes current image to the animation image for the corresponding direction of movement
+        self.current_image = image
+        
+        #state
+        self.state = "Stationary"
+        #list holding info on whether or not there are boxes in either of the 4 directions of the cube
+        self.near_boxes = [None,None,None,None]
+        
+        #used to track movement
+        self.count = 0
+        
+        #Run-Once variable for setting box state
+        self.set_box_state = False
+        
+    def draw(self, c):
+        #Continuously calls Update
+        self.update()
+        
+        #Draws Ball Shadow
+        c.draw_image(ball_shadow,[260,260],[520,520],[self.pos[0]+25,self.pos[1]+25],[100,100])   
+        
+        #When stationary 
+        if self.state == "Stationary" or self.state == 'drown':
+            c.draw_image(self.image,[130,130],[260,260],self.pos,[50,50])
+        #moving animation
+        if self.state == "Right" or self.state == "Left" or self.state == "Up" or self.state == "Down":
+            self.animate(c)
+         
+    
+    def update(self):
+        #Update Coords
+        self.coords = [(self.pos[0] - 40) / 50, (self.pos[1] - 40) / 50]
+        #if not moving, detects button presses. When button pressed down, set animation image and set corresponding state
+        #Calls predetect to see if you are allowed to move in a certain direction (nothing blocking like iron boxes or the map border... etc)
+        if self.state == "Stationary":
+            if STACK.peek() == 'r' and self.pre_detect()[0] == True:
+                self.state = "Right"
+                self.current_image = self.img_r
+            elif STACK.peek() == 'l' and self.pre_detect()[1] == True:
+                self.state = "Left"
+                self.current_image = self.img_l
+            elif STACK.peek() == 'u' and self.pre_detect()[2] == True:
+                self.state = "Up"
+                self.current_image = self.img_u
+            elif STACK.peek() == 'd' and self.pre_detect()[3] == True:
+                self.state = "Down"
+                self.current_image = self.img_d
+        #Moving function called continuously
+        self.move()       
+        
+    def move(self):
+        #If any directional state is the current state, then run the code
+        if self.state == "Right" or self.state == "Left" or self.state == "Up" or self.state == "Down":
+            #Moves ball continuously in direction corresponding to the state
+            #If there is a box in the direction you are moving, set the state of the box to move in the corresponding direction. The set_box_state is a 
+            #run once variable to make the state be set only once until you move again.
+            if self.state == "Right":
+                if self.set_box_state == False and not self.near_boxes[0] == None:
+                    self.set_box_state = True
+                    self.near_boxes[0].state = 'Right'
+                self.pos[0] += 5
+            elif self.state == "Left":
+                if self.set_box_state == False and not self.near_boxes[1] == None:
+                    self.set_box_state = True
+                    self.near_boxes[1].state = 'Left'
+                self.pos[0] -= 5
+            elif self.state == "Up":
+                if self.set_box_state == False and not self.near_boxes[2] == None:
+                    self.set_box_state = True
+                    self.near_boxes[2].state = 'Up'
+                self.pos[1] -= 5
+            elif self.state == "Down":
+                if self.set_box_state == False and not self.near_boxes[3] == None:
+                    self.set_box_state = True
+                    self.near_boxes[3].state = 'Down'
+                self.pos[1] += 5
+            #Increment count
+            self.count += 5
+            #Detects when the ball has moved a single tile and then sets state to Stationary. Also resets count
+            if self.count >= 50:
+                self.state = "Stationary"
+                self.count = 0
+                #Updates Coords and runs post-detect
+                self.coords = [(self.pos[0] - 40) / 50, (self.pos[1] - 40) / 50]
+                self.post_detect()
+   
+    def pre_detect(self):
+        self.allowed_movement = [True,True,True,True]
+        self.near_boxes = [None,None,None,None]
+        self.set_box_state = False
+        #Detects if the end of the map is in any direction of the player
+        if self.coords[0] == 19:
+            self.allowed_movement[0] = False
+        if self.coords[0] == 0:
+            self.allowed_movement[1] = False
+        if self.coords[1] == 11:
+            self.allowed_movement[3] = False
+        if self.coords[1] == 0:
+            self.allowed_movement[2] = False
+            
+        #Detects metal boxes
+        if self.allowed_movement[0] == True and GLOBAL.CURRENT_LVL.ground_layout[int(self.coords[1])][int(self.coords[0]) + 1] == 'B':
+            self.allowed_movement[0] = False
+        if self.allowed_movement[1] == True and GLOBAL.CURRENT_LVL.ground_layout[int(self.coords[1])][int(self.coords[0]) - 1] == 'B':
+            self.allowed_movement[1] = False
+        if self.allowed_movement[2] == True and GLOBAL.CURRENT_LVL.ground_layout[int(self.coords[1]) - 1][int(self.coords[0])] == 'B':
+            self.allowed_movement[2] = False
+        if self.allowed_movement[3] == True and GLOBAL.CURRENT_LVL.ground_layout[int(self.coords[1]) + 1][int(self.coords[0])] == 'B':
+            self.allowed_movement[3] = False
+        
+        #Detects boxes that aren't in the water
+        #If the box is not able to be pushed in a certain direction (box.detect() returns that info) then allowed movement is set to false for that direction
+        for box in GLOBAL.CURRENT_LVL.boxes:
+            if not box.state == 'drown':
+                if self.allowed_movement[0] == True and box.coords == [self.coords[0] + 1, self.coords[1]]:
+                    self.near_boxes[0] = box
+                    if box.detect()[0] == False:
+                        self.allowed_movement[0] = False
+                if self.allowed_movement[1] == True and box.coords == [self.coords[0] - 1, self.coords[1]]:
+                    self.near_boxes[1] = box
+                    if box.detect()[1] == False:
+                        self.allowed_movement[1] = False
+                if self.allowed_movement[2] == True and box.coords == [self.coords[0], self.coords[1] - 1]:
+                    self.near_boxes[2] = box
+                    if box.detect()[2] == False:
+                        self.allowed_movement[2] = False
+                if self.allowed_movement[3] == True and box.coords == [self.coords[0], self.coords[1] + 1]:
+                    self.near_boxes[3] = box
+                    if box.detect()[3] == False:
+                        self.allowed_movement[3] = False
+        
+        #Returns an array which says whether or not movement in a certain direction is allowed
+        #[Right,Left,Up,Down] 
+        return self.allowed_movement
+    
+    def post_detect(self):
+        #detects if player is standing on water and sets state to drown as well as starts reset timer if on water
+        if GLOBAL.CURRENT_LVL.ground_layout[int(self.coords[1])][int(self.coords[0])] == 'W':
+            self.state = 'drown'
+            reset_timer.start()
+        
+        #Detects if on vortex
+        elif GLOBAL.CURRENT_LVL.vortex.coords == self.coords and GLOBAL.CURRENT_LVL.vortex.state == 'stationary':
+            #sets the vortex to close
+            GLOBAL.CURRENT_LVL.vortex.set_image = False
+            GLOBAL.CURRENT_LVL.vortex.state = 'close'
+            #State drown to make player disappear under the tiles
+            self.state = 'drown'            
+            #starts timer to open post level menu
+            post_timer.start()
+    
+    def animate(self, canvas):       
+        self.current_index = (self.time % 24) // 6
+        self.current_center = [self.image_center[0] +  self.current_index * self.image_size[0], self.image_center[1]]
+        canvas.draw_image(self.current_image, self.current_center, self.image_size, self.pos, self.desired_image_size) 
+        self.time += 0.95
+ 
+
+
+
+class Box:
+    def __init__(self,coords):
+        #Position and state
+        self.coords = coords
+        self.pos = [(coords[0] * 50) + 40,(coords[1] * 50) + 40]
+        self.state = "Stationary"
+        
+        #Used to track movement
+        self.count = 0
+        
+        #dictionary to match strings with index
+        self.direction_dict = {'Right':0,'Left':1,'Up':2,'Down':3}
+    
+    def draw(self,c):
+        c.draw_image(box_image,[130,130],[260,260],self.pos,[50,50])
+        
+        self.move()
+    
+    def detect(self):
+        #                        Right,Left,Up,Down
+        self.allowed_movement = [True,True,True,True]
+        #Detects if the end of the map is in any direction of the player
+        if self.coords[0] == 19:
+            self.allowed_movement[0] = False
+        if self.coords[0] == 0:
+            self.allowed_movement[1] = False
+        if self.coords[1] == 11:
+            self.allowed_movement[3] = False
+        if self.coords[1] == 0:
+            self.allowed_movement[2] = False
+        
+        #Detects metal boxes
+        if self.allowed_movement[0] == True and GLOBAL.CURRENT_LVL.ground_layout[int(self.coords[1])][int(self.coords[0]) + 1] == 'B':
+            self.allowed_movement[0] = False
+        if self.allowed_movement[1] == True and GLOBAL.CURRENT_LVL.ground_layout[int(self.coords[1])][int(self.coords[0]) - 1] == 'B':
+            self.allowed_movement[1] = False
+        if self.allowed_movement[2] == True and GLOBAL.CURRENT_LVL.ground_layout[int(self.coords[1]) - 1][int(self.coords[0])] == 'B':
+            self.allowed_movement[2] = False
+        if self.allowed_movement[3] == True and GLOBAL.CURRENT_LVL.ground_layout[int(self.coords[1]) + 1][int(self.coords[0])] == 'B':
+            self.allowed_movement[3] = False
+            
+        #Detects other boxes
+        for box in GLOBAL.CURRENT_LVL.boxes:
+            if not box.state == 'drown':
+                if self.allowed_movement[0] == True and box.coords == [self.coords[0] + 1, self.coords[1]]:
+                    self.allowed_movement[0] = False
+                if self.allowed_movement[1] == True and box.coords == [self.coords[0] - 1, self.coords[1]]:
+                    self.allowed_movement[1] = False
+                if self.allowed_movement[2] == True and box.coords == [self.coords[0], self.coords[1] - 1]:
+                    self.allowed_movement[2] = False
+                if self.allowed_movement[3] == True and box.coords == [self.coords[0], self.coords[1] + 1]:
+                    self.allowed_movement[3] = False
+        
+        #Detects Vortex in all 4 directions
+        if GLOBAL.CURRENT_LVL.vortex.state == 'stationary':
+            if self.allowed_movement[0] == True and GLOBAL.CURRENT_LVL.vortex.coords == [self.coords[0] + 1, self.coords[1]]:
+                self.allowed_movement[0] = False
+            if self.allowed_movement[1] == True and GLOBAL.CURRENT_LVL.vortex.coords == [self.coords[0] - 1, self.coords[1]]:
+                self.allowed_movement[1] = False
+            if self.allowed_movement[2] == True and GLOBAL.CURRENT_LVL.vortex.coords == [self.coords[0], self.coords[1] - 1]:
+                self.allowed_movement[2] = False
+            if self.allowed_movement[3] == True and GLOBAL.CURRENT_LVL.vortex.coords == [self.coords[0], self.coords[1] + 1]:
+                self.allowed_movement[3] = False
+        
+        #Returns an array which says whether or not movement in a certain direction is allowed
+        #[Right,Left,Up,Down] 
+        return self.allowed_movement 
+    
+    def post_detect(self):
+        #detects if on water, and if so, makes the box's state 'drown' and sets the map tile to 'S' so the player can move on it like a normal tile and not drown
+        if GLOBAL.CURRENT_LVL.ground_layout[int(self.coords[1])][int(self.coords[0])] == 'W':
+            self.state = 'drown'
+            GLOBAL.CURRENT_LVL.ground_layout[int(self.coords[1])][int(self.coords[0])] = 'S'
+    
+    def move(self):
+        #If any directional state is the current state, then run the code
+        if self.state == "Right" or self.state == "Left" or self.state == "Up" or self.state == "Down":
+            #Moves box continuously in direction corresponding to the state
+            if self.state == "Right":
+                self.pos[0] += 5
+            elif self.state == "Left":
+                self.pos[0] -= 5
+            elif self.state == "Up":
+                self.pos[1] -= 5
+            elif self.state == "Down":
+                self.pos[1] += 5
+            #Increment count
+            self.count += 5
+            #Detects when the ball has moved a single tile and then sets state to Stationary. Also resets count
+            if self.count >= 50:
+                self.state = "Stationary"
+                self.count = 0
+                #Updates Coords and runs post-detect
+                self.coords = [(self.pos[0] - 40) / 50, (self.pos[1] - 40) / 50]
+                self.post_detect()
+ 
+
+
+
+class IceCube(Box):
+    def draw(self,c):
+        c.draw_image(ice_image,[130,130],[260,260],self.pos,[50,50])
+        
+        self.move()
+        
+    def move(self):
+        #If any directional state is the current state, then run the code
+        if self.state == "Right" or self.state == "Left" or self.state == "Up" or self.state == "Down":
+            #Moves box continuously in direction corresponding to the state
+            if self.state == "Right":
+                self.pos[0] += 5
+            elif self.state == "Left":
+                self.pos[0] -= 5
+            elif self.state == "Up":
+                self.pos[1] -= 5
+            elif self.state == "Down":
+                self.pos[1] += 5
+            #Increment count
+            self.count += 5
+            #Detects when the ball has moved a single tile and then sets state to Stationary. Also resets count
+            if self.count >= 50:
+                self.coords = [(self.pos[0] - 40) / 50, (self.pos[1] - 40) / 50]
+                if self.detect()[self.direction_dict[self.state]] == False:
+                    self.state = "Stationary"
+                    self.count = 0
+                    #Updates Coords and runs post-detect
+                    self.coords = [(self.pos[0] - 40) / 50, (self.pos[1] - 40) / 50]
+                    self.post_detect()
+                else:
+                    self.count = 0
+                    self.post_detect()
+
+
+
+      
+#Exploding Animation for death and other explosions
+class Explode:
+    def __init__(self,pos):
+        self.pos = pos
+        self.time = 0
+        self.lifetime = 0
+        self.image_size = [780,780]
+        self.image_center = [390,390]
+        self.desired_size = [150,150]
+        
+        self.EXPLOSION_CENTER = [50, 50]
+        self.EXPLOSION_SIZE = [100, 100]
+        self.EXPLOSION_DIM = [9, 9]
+        self.time = 0
+        
+    def animate(self,canvas):
+        self.explosion_index = [self.time % self.EXPLOSION_DIM[0], (self.time // self.EXPLOSION_DIM[0]) % self.EXPLOSION_DIM[1]]
+        canvas.draw_image(explosion_image, 
+                         [self.EXPLOSION_CENTER[0] + self.explosion_index[0] * self.EXPLOSION_SIZE[0], 
+                          self.EXPLOSION_CENTER[1] + self.explosion_index[1] * self.EXPLOSION_SIZE[1]], 
+                          self.EXPLOSION_SIZE, self.pos, self.EXPLOSION_SIZE)
+        self.time += 1
+        self.lifetime += 1
+
+
+
+class Vortex:
+    def __init__(self,coords):
+        self.coords = coords
+        self.pos = [(coords[0] * 50) + 40,(coords[1] * 50) + 40]
+        self.state = 'blank'
+        #Vortex animation images
+        self.open = vortex_open
+        self.close = vortex_close
+        self.stationary = vortex_tile
+        self.blank = blank_tile
+        self.current_image = self.blank
+        #run once variable to set image
+        self.set_image = False
+        #duration of the opening and closing vortex animation
+        self.duration = 0
+        
+        #animation variables   frames, and animation speed
+        self.time = 0
+        self.frames = 0
+        self.animation_speed = 0.25
+        
+    def draw(self,c):
+        if self.state == 'open' or self.state == 'close':
+            #sets image, frames, and animation speed, resets time to start animation from the beginning
+            if self.set_image == False and self.state == 'close':
+                self.current_image = self.close
+                self.set_image = True
+                self.frames = 9
+                self.animation_speed = 0.25
+                self.time = 0
+            elif self.set_image == False and self.state == 'open':
+                self.current_image = self.open
+                self.set_image = True
+                self.frames = 9
+                self.animation_speed = 0.25
+                self.time = 0
+            
+                
+            #increment duration and animate image    
+            self.animate(c)
+            self.duration += 1
+            
+            #if duration is at a certain value, reset the runonce variable and set appropriate state
+            if self.duration >= 36:
+                if self.state == 'open':
+                    self.state = 'stationary'
+                elif self.state == 'close':
+                    self.state = 'blank'
+                self.duration = 0
+                self.set_image = False
+        
+        elif self.state == 'stationary':
+            if self.set_image == False:
+                self.current_image = self.stationary
+                self.set_image = True
+                self.frames = 11
+                self.animation_speed = 0.3
+                self.time = 0
+                           
+            self.animate(c)
+            for box in GLOBAL.CURRENT_LVL.boxes:
+                if box.coords == self.coords:
+                    GLOBAL.CURRENT_LVL.remove_boxes.add(box)
+            
+        else:
+            self.current_image = self.blank
+        
+    def animate(self,canvas):
+        self.current_index = (self.time % self.frames) // 1
+        self.current_center = [130 +  self.current_index * 260, 130]
+        canvas.draw_image(self.current_image, self.current_center, [260,260], self.pos, [70,70]) 
+        self.time += self.animation_speed
+           
+class X_Box_Tile():
+    def __init__(self,coords):
+        self.coords = coords
+        self.pos = [(coords[0] * 50) + 40,(coords[1] * 50) + 40]
+    def draw(self,c):
+        c.draw_image(box_x_tile,[130,130],[260,260],self.pos,[60,60])
+        
+class X_Ice_Tile(X_Box_Tile):
+    def draw(self,c):
+        c.draw_image(ice_x_tile,[130,130],[260,260],self.pos,[60,60])
+            
+#GROUND LAYOUT        
+#T = Normal Tile
+#W = Blank Spot
+#B = Iron block
+
+#TOP LAYOUT
+#V = Vortex
+#C = Wood Crate X Mark
+#I = Ice Cube X Mark
+
+tile_dictionary = {'T':floor_tile,'B':iron_tile,'W':blank_tile,'S':blank_tile}
+class Level:
+    def __init__(self, ground_layout, player_start_pos, vortex, boxes, name, time, xbox = [], xice = []):
+        #Ground layout is a list of lists containing a grid of strings to draw the background of a level including tiles like
+        #regular ground, and iron blocks 
+        self.ground_layout = ground_layout
+        #variables hold class instances for vortex tile, and any X tiles (xbox and xice are arrays of class instances of X_Ice_Tile and X_Box_Tile classes)
+        self.vortex = vortex
+        self.xice = set(xice)
+        self.xbox = set(xbox)
+        
+        #Player class instance
+        self.PLYR = Player(player_start_pos,player,player_up,player_down,player_right,player_left)
+        
+        #list of boxes and explosions
+        self.boxes = set(boxes)
+        self.explosions = set([])
+        #list of explosions to remove
+        self.remove_explosions = set([])
+        self.remove_boxes = set([])
+        
+        #Name of the level
+        self.name = name
+        
+        #If all X's have been satisfied, opens exit
+        self.open_exit = False
+        
+        #Time to beat the level.  Time_Runout used as a runonce variable to run a chunk of code when time runs out
+        self.time = time
+        self.time_runout = 0
+        self.second = 0
+        
+        #Exit Button
+        self.exit_button = Button([0,0],exit_icon,[260,260],[50,50])
+    
+    def mouse(self,pos):
+        if self.exit_button.click(pos):
+            GLOBAL.MENU.menustate = 'main' 
+            GLOBAL.gamestate = 'Menu'
+    
+    def draw_level(self,canvas):
+        #Variable used to track current position on grid when drawing level
+        self.grid_position = [40,40]
+        
+        #Draw Marble
+        canvas.draw_image(marble_image,[515,350],[1030,700],[515,350],[1030,700])     
+
+        #Draws water shadows
+        for row in self.ground_layout:
+            for tile in row:
+                if tile == 'T' or tile == 'B' or tile == 'S':
+                    canvas.draw_image(water_shadow,[260,260],[520,520],[self.grid_position[0] + 25,self.grid_position[1] + 25],[100,100])
+                self.grid_position[0] += 50
+            self.grid_position[1] += 50
+            self.grid_position[0] = 40    
+        
+        #Draws player before tiles (When sunken to create underwater effect)
+        if self.PLYR.state == 'drown':
+            self.PLYR.draw(canvas) 
+        
+        #Draw Boxes before tiles for sink effect
+        for box in self.boxes:
+            if box.state == 'drown':
+                box.draw(canvas)
+        
+        #Draw Water
+        canvas.draw_image(water_image,[515,350],[1030,700],[515,350],[1030,700])             
+        
+        #Reset Grid Position
+        self.grid_position = [40,40]
+        
+        #Draws the ground_layout
+        for row in self.ground_layout:
+            for tile in row:
+                canvas.draw_image(tile_dictionary[tile],[130,130],[260,260],self.grid_position,[50,50])
+                self.grid_position[0] += 50
+            self.grid_position[1] += 50
+            self.grid_position[0] = 40
+        
+        
+        
+        
+        #Detects if all X marks are satisfied. open_exit initially set to false
+        self.open_exit = False
+        #temporary array to report the status of each x mark
+        self.x_satisfaction = []
+        #Temporary variable to tell if TRUE has already been added to the list
+        self.status_added = False
+        #If there are no Xs, exit opens automatically
+        if len(self.xice) == 0 and len(self.xbox) == 0:
+            self.open_exit = True
+        else:
+            #Adds the state of each X to the satisfaction list
+            for x in self.xice:
+                for box in self.boxes:
+                    if box.__name__ == 'IceCube' and box.coords == x.coords:
+                        self.x_satisfaction.append(True)
+                        self.status_added = True
+                if self.status_added == False:
+                    self.x_satisfaction.append(False)
+                self.status_added = False
+            
+            #status added set to false
+            self.status_added = False
+            
+            for x in self.xbox:
+                for box in self.boxes:
+                    if box.__name__ == 'Box' and box.coords == x.coords:
+                        self.x_satisfaction.append(True)
+                        self.status_added = True
+                if self.status_added == False:
+                    self.x_satisfaction.append(False)
+                self.status_added = False
+            
+            #If all Xs are satisfied, exit opens
+            #print(self.x_satisfaction)
+            #print(False in self.x_satisfaction)
+            #print(not (False in self.x_satisfaction))
+            if not (False in self.x_satisfaction):
+                self.open_exit = True     
+        
+        #controls animations with vortex
+        if self.open_exit == True and self.vortex.state == 'blank':
+            self.vortex.set_image = False
+            self.vortex.state = 'open'
+        elif self.open_exit == False and self.vortex.state == 'stationary':
+            self.vortex.set_image = False
+            self.vortex.state = 'close'
+        
+        
+        
+        
+        #Draws the vortex and any X tiles
+        self.vortex.draw(canvas)   
+        for tile in self.xice:
+            tile.draw(canvas)
+        for tile in self.xbox:
+            tile.draw(canvas)
+    
+        #Draws Player After Tiles
+        if not self.PLYR.state == 'drown':
+            self.PLYR.draw(canvas)
+            
+        #Draws boxes
+        for box in self.boxes:
+            if not box.state == 'drown':
+                box.draw(canvas)
+              
+        #Draws explosions and adds explosions to be removed that exceeded their lifespan
+        for expl in self.explosions:
+            expl.animate(canvas)
+            if expl.lifetime >= 64:
+                self.remove_explosions.add(expl)
+        
+        #Draws HotBar Items and Border
+        canvas.draw_image(border_image,[515,350],[1030,700],[515,350],[1030,700])
+        canvas.draw_polygon([[100,640],[300,640],[300,698],[100,698]],5,'Black')
+        canvas.draw_text('TIME: ' + str(self.time),[115,680],40,'Black')
+        canvas.draw_polygon([[300,640],[500,640],[500,698],[300,698]],5,'Black')
+        canvas.draw_text('LEVEL ' + str(GLOBAL.CURRENT_LVL_IDX + 1),[315,680],40,'Black')
+        self.exit_button.center = [550,665]
+        self.exit_button.draw(canvas)
+        
+        #removes explosions and boxes that need removing. Cleares explosion list in between
+        for expl in self.remove_explosions:
+            if expl in self.explosions:
+                self.explosions.remove(expl)
+                
+        self.remove_explosions = set([])   
+        
+        for box in self.remove_boxes:
+            if box in self.boxes:
+                self.explosions.add(Explode(box.pos))
+                self.boxes.remove(box)
+            
+        #Timer when this function has been called 60 times, a second has passed so time is decremented
+        if self.second >= 60:
+            self.second = 0
+            self.time -= 1
+        
+        #If the time goes to 0 or under, player is set to drown and then the reset timer starts to reset the level
+        #An explosion is appended to the list to play the explosion animation at players position
+        if self.time <= 0 and self.time_runout == 0:
+            self.PLYR.state = 'drown'
+            reset_timer.start()
+            self.time_runout = 1
+            self.explosions.add(Explode(self.PLYR.pos))  
+        
+        self.second += 1
+            
+
+            
+            
+            
+#Stores all global variables
+class global_store:
+    def __init__(self):
+        #Array of levels
+        self.levels = []
+        #list of booleans corresponding to whether the level in the same index as above has been completed
+        self.completed = []
+        
+        #Level thats currently selected
+        self.CURRENT_LVL = None
+        self.CURRENT_LVL_IDX = None
+        
+        #What state is the game in
+        self.gamestate = 'Menu'
+        
+        #Instantiates menu class
+        self.MENU = Menu()
+        
+        #variable to store game score
+        self.score = 0
+        #score earned from the level that you just beat
+        self.current_score = 0
+        
+    def define_levels(self):
+        #######ADD LEVELS HERE########
+        self.levels = []
+        #What the Level class takes as parameters
+        #ground_layout, player_start_pos, vortex, boxes, name, time, xbox = [], xice = []
+        
+        #						    0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19
+        self.levels.append(Level([['T','T','T','T','T','T','T','T','T','W','W','W','W','W','W','W','W','W','W','W'],  #0
+                                  ['T','T','T','T','T','T','T','T','T','W','W','W','W','W','W','W','W','W','W','W'],  #1
+                                  ['T','T','T','T','T','T','T','T','T','T','W','W','W','W','W','W','W','W','W','W'],  #2
+                                  ['T','T','T','T','T','T','T','T','T','T','T','T','W','T','T','T','T','T','T','T'],  #3
+                                  ['W','W','W','W','W','T','T','T','T','W','W','W','W','W','W','W','T','T','T','T'],  #4
+                                  ['W','W','W','W','W','W','T','T','T','W','W','W','W','W','W','W','T','T','T','T'],  #5
+                                  ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','T'],  #6
+                                  ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','T'],  #7
+                                  ['T','T','T','T','T','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #8
+                                  ['T','T','T','T','T','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #9
+                                  ['T','T','T','T','T','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #10
+                                  ['T','T','T','T','T','T','T','T','W','W','W','W','W','W','W','W','W','W','W','W']], #11
+                                  [1,1],Vortex([17,4]),[Box([7,2]),Box([6,2])],'ORIGIN',30))
+
+        #						    0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19
+        self.levels.append(Level([['T','T','T','T','T','T','T','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #0
+                                  ['T','T','T','T','T','T','T','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #1
+                                  ['T','T','T','W','W','T','T','W','W','B','B','B','B','B','W','W','W','W','W','W'],  #2
+                                  ['T','T','T','W','W','T','T','W','W','B','T','T','T','B','W','W','W','W','W','W'],  #3
+                                  ['T','T','T','W','W','W','T','W','W','T','T','T','T','B','W','W','W','W','W','W'],  #4
+                                  ['T','T','T','W','W','T','T','W','W','B','T','T','T','B','W','W','W','W','W','W'],  #5
+                                  ['T','T','T','W','W','T','T','W','W','B','B','B','B','B','W','W','W','W','W','W'],  #6
+                                  ['T','T','T','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #7
+                                  ['T','T','T','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #8
+                                  ['T','T','T','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #9
+                                  ['T','T','T','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #10
+                                  ['T','T','T','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W']], #11
+                                  [1,1],Vortex([11,4]),[Box([2,3]),Box([2,6]),Box([2,9])],'FORTRESS',45))
+        
+        #						    0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19
+        self.levels.append(Level([['W','W','W','T','T','T','T','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #0
+                                  ['W','W','W','T','T','T','T','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #1
+                                  ['T','T','T','T','T','T','T','T','T','T','B','B','B','B','W','W','W','W','W','W'],  #2
+                                  ['T','T','T','T','T','T','T','T','T','T','T','T','T','B','W','W','W','W','W','W'],  #3
+                                  ['T','T','T','T','T','T','T','T','T','T','T','T','T','B','W','W','W','W','W','W'],  #4
+                                  ['T','T','T','W','W','T','T','W','W','B','T','T','T','B','W','W','W','W','W','W'],  #5
+                                  ['T','T','T','W','W','T','T','W','W','B','B','B','B','B','W','W','W','W','W','W'],  #6
+                                  ['T','T','T','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #7
+                                  ['T','T','T','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #8
+                                  ['T','T','T','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #9
+                                  ['T','T','T','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #10
+                                  ['T','T','T','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W']], #11
+                                  [1,2],Vortex([11,4]),[IceCube([2,3]),Box([6,3]),Box([4,0]),Box([10,4])],'ALOTA X',110,
+                                  [X_Box_Tile([0,11]),X_Box_Tile([5,0])],[X_Ice_Tile([1,11])]))
+            
+        
+        #						    0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19
+        self.levels.append(Level([['T','T','T','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #0
+                                  ['T','T','T','W','W','W','T','T','W','W','W','W','T','T','W','W','T','T','W','W'],  #1
+                                  ['T','T','T','W','W','T','T','T','T','W','W','T','T','T','T','T','T','T','T','W'],  #2
+                                  ['T','T','T','T','T','T','T','T','T','W','W','T','T','T','T','T','T','T','T','W'],  #3
+                                  ['T','T','T','T','T','T','T','T','T','W','W','T','T','T','W','W','T','T','T','W'],  #4
+                                  ['W','W','W','W','W','W','T','T','T','W','W','W','T','T','W','W','W','W','W','W'],  #5
+                                  ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','T','T'],  #6
+                                  ['W','W','W','W','W','W','T','T','W','W','W','T','T','T','T','W','W','W','T','T'],  #7
+                                  ['W','W','W','W','W','T','T','T','T','T','T','T','T','T','T','W','W','T','T','T'],  #8
+                                  ['T','T','T','T','T','T','T','T','T','T','T','T','T','T','T','W','W','T','T','T'],  #9
+                                  ['T','T','T','W','W','T','T','T','T','W','T','T','T','T','T','W','W','T','T','T'],  #10
+                                  ['T','T','T','W','W','W','W','W','W','W','W','T','T','T','W','W','W','W','W','W']], #11
+                                  [1,1],Vortex([18,9]),[IceCube([4,4]),Box([2,4]),Box([6,2]),Box([1,10])],'TRAVERSE',90,
+                                  [],[X_Ice_Tile([17,3])]))
+        
+        #						    0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19
+        self.levels.append(Level([['T','T','T','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #0
+                                  ['T','T','T','T','T','T','W','W','T','T','T','T','T','W','W','W','W','W','W','W'],  #1
+                                  ['T','T','T','W','W','T','W','W','T','W','W','W','T','W','W','W','W','W','W','W'],  #2
+                                  ['W','W','W','W','W','T','W','W','T','W','W','W','T','W','W','W','W','W','W','W'],  #3
+                                  ['W','W','W','W','W','T','W','W','T','W','W','T','T','T','W','W','W','W','W','W'],  #4
+                                  ['W','W','W','W','W','T','W','W','T','T','T','T','T','T','T','T','W','W','W','W'],  #5
+                                  ['W','W','W','W','W','T','W','W','T','W','W','T','T','T','W','T','W','W','W','W'],  #6
+                                  ['W','W','W','W','T','T','T','W','T','W','W','W','T','W','W','T','T','T','T','W'],  #7
+                                  ['W','W','W','W','T','T','T','T','T','T','T','T','T','W','W','W','W','W','T','W'],  #8
+                                  ['W','W','W','W','T','T','T','W','W','W','W','W','W','W','W','W','W','T','T','T'],  #9
+                                  ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','T','T','T'],  #10
+                                  ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','T','T','T']], #11
+                                  [1,1],Vortex([18,10]),[Box([12,5])],'ACTIVE',30,
+                                  [X_Box_Tile([5,8])]))
+        
+        #						    0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19
+        self.levels.append(Level([['T','T','T','T','T','T','T','T','T','B','T','T','T','T','W','W','W','W','W','W'],  #0
+                                  ['T','T','T','W','W','W','T','T','T','B','T','T','T','T','W','W','W','W','W','W'],  #1
+                                  ['T','T','T','W','W','W','T','T','T','T','T','T','T','T','W','W','W','W','W','W'],  #2
+                                  ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #3
+                                  ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #4
+                                  ['W','W','W','W','W','W','T','T','T','B','W','W','W','W','W','W','W','W','W','W'],  #5
+                                  ['W','W','W','W','W','W','T','T','T','B','T','T','T','T','W','W','W','W','W','W'],  #6
+                                  ['W','W','W','W','W','W','T','T','T','B','T','T','T','T','W','W','W','W','W','W'],  #7
+                                  ['W','W','W','W','W','W','T','T','T','T','T','T','T','T','W','W','W','W','W','W'],  #8
+                                  ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #9
+                                  ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #10
+                                  ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W']], #11
+                                  [1,1],Vortex([12,1]),[Box([7,1]),Box([12,1]),Box([7,8]),Box([7,7]),Box([7,6])],'ISLANDER',45,
+                                  [X_Box_Tile([12,7])]))
+        
+        
+        #						    0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19
+        self.levels.append(Level([['T','T','T','T','T','T','T','T','T','T','T','T','T','T','W','W','W','W','W','W'],  #0
+                                  ['T','T','T','W','W','W','W','W','W','W','W','W','W','T','W','W','W','W','W','W'],  #1
+                                  ['T','T','T','W','W','W','W','T','T','T','T','W','T','T','T','W','T','W','T','T'],  #2
+                                  ['W','T','W','W','W','W','W','T','T','T','T','W','T','T','T','T','T','T','T','B'],  #3
+                                  ['W','T','W','W','W','W','W','T','T','T','T','W','T','T','T','W','T','W','T','T'],  #4
+                                  ['W','T','W','W','W','W','W','T','T','T','T','W','W','T','W','W','W','W','W','T'],  #5
+                                  ['W','T','T','W','T','T','W','T','T','T','T','T','T','T','W','W','W','W','W','T'],  #6
+                                  ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','T','T','T','T'],  #7
+                                  ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','T','T','T','T'],  #8
+                                  ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','T','T','T','T'],  #9
+                                  ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #10
+                                  ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W']], #11
+                                  [1,1],Vortex([17,8]),[Box([16,3]),Box([10,3]),Box([8,3])],'OBSTACLE',30))
+      
+        #						    0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19
+        self.levels.append(Level([['T','T','T','W','W','T','T','T','W','W','T','T','T','W','W','W','W','W','W','W'],  #0
+                                  ['T','T','T','T','T','T','T','T','T','T','T','T','T','W','W','W','W','W','W','W'],  #1
+                                  ['T','T','T','W','W','T','T','T','W','W','T','T','T','W','W','W','W','W','W','W'],  #2
+                                  ['W','T','W','W','W','W','T','W','W','W','W','T','W','W','W','W','W','W','W','W'],  #3
+                                  ['W','T','W','W','W','W','T','W','W','W','W','T','W','W','W','W','W','W','W','W'],  #4
+                                  ['T','T','T','W','W','T','T','T','W','W','T','T','T','W','W','W','W','W','W','W'],  #5
+                                  ['T','T','T','T','T','T','T','T','T','T','T','T','T','W','W','W','W','W','W','W'],  #6
+                                  ['T','T','T','W','W','T','T','T','W','W','T','T','T','W','W','W','W','W','W','W'],  #7
+                                  ['W','T','W','W','W','W','T','W','W','W','W','T','W','W','W','W','W','W','W','W'],  #8
+                                  ['W','T','W','W','W','W','T','W','W','W','W','T','W','W','W','W','W','T','T','T'],  #9
+                                  ['T','T','T','W','W','T','T','T','W','W','W','W','W','W','W','W','W','T','T','T'],  #10
+                                  ['T','T','T','T','T','T','T','T','T','T','T','W','T','T','T','T','T','T','T','T']], #11
+                                  [1,1],Vortex([18,10]),[IceCube([1,6]),Box([11,1]),Box([11,6])],'GUIDANCE',45,
+                                  [],[X_Ice_Tile([6,1])]))
+    
+    
+        #						    0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19
+        self.levels.append(Level([['T','T','T','T','T','T','T','T','W','W','W','W','W','W','W','W','W','W','W','W'],  #0
+                                  ['T','T','T','T','T','T','T','T','W','W','W','W','W','W','W','W','W','W','W','W'],  #1
+                                  ['T','T','T','T','T','T','T','T','W','W','W','W','W','W','W','W','W','W','W','W'],  #2
+                                  ['W','W','W','W','W','T','T','T','W','W','W','W','W','W','W','W','W','W','W','W'],  #3
+                                  ['W','W','W','W','W','T','T','T','W','W','W','W','W','W','W','W','W','T','T','T'],  #4
+                                  ['W','W','T','T','T','T','T','T','T','W','W','W','W','W','W','W','T','T','T','T'],  #5
+                                  ['W','W','T','T','T','T','T','T','T','T','T','T','T','T','T','T','T','T','T','T'],  #6
+                                  ['W','W','T','T','T','T','T','T','T','W','W','W','W','W','W','W','T','T','T','T'],  #7
+                                  ['W','W','T','T','T','T','T','T','W','W','W','W','W','W','W','W','W','T','T','T'],  #8
+                                  ['W','W','W','W','W','T','T','T','W','W','W','W','W','W','W','W','W','T','T','T'],  #9
+                                  ['W','W','W','W','W','T','T','T','W','W','W','W','W','W','W','W','W','T','T','T'],  #10
+                                  ['W','W','W','W','W','T','T','T','W','W','W','W','W','W','W','W','W','T','T','T']], #11
+                                  [1,1],Vortex([18,10]),[IceCube([6,1]),Box([3,6])],'PATHWAY',45,
+                                  [],[X_Ice_Tile([18,6])]))
+        
+        
+        '''#						    0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19
+        self.levels.append(Level([['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #0
+                                  ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #1
+                                  ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #2
+                                  ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #3
+                                  ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #4
+                                  ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #5
+                                  ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #6
+                                  ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #7
+                                  ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #8
+                                  ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #9
+                                  ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],  #10
+                                  ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W']], #11
+                                  [],Vortex([]),[IceCube([]),Box([])],'',10,
+                                  [X_Box_Tile([])],[X_Ice_Tile([])]))'''
+        
+                        
+
+            
+            
+#class that controls the entire main menu
+class Menu:
+    def __init__(self):
+        #Background moving sky images
+        self.skys = []
+        self.skys.append(515)
+        self.skys.append(1542)
+        #Remove skys that are off screen
+        self.sky_remove = []
+        
+        #Instantiate Playbutton and other buttons
+        self.play_button = Button([150,230],play_button_image,[300,100],[150,50])
+        self.lvlsel_bttn = Button([450,240],levelsel_button_image,[300,100],[160,55])
+        
+        self.play_button_inlevel = Button([420,400],inlevel_play_button_image,[300,100],[180,60])
+        self.next_level_button = Button([200,400],next_level_button_image,[300,100],[180,60])
+        self.exit_button = Button([0,0],exit_icon,[260,260],[50,50])
+        
+        self.levelselect_buttons = []
+        self.back_button = Button([515,210],'rect',[0,0],[100,30],'Black','Gray','BACK',20,'Black')
+        self.right_button = Button([900,210],'rect',[0,0],[50,30],'Black','Gray','>',20,'Black')
+        self.left_button = Button([100,210],'rect',[0,0],[50,30],'Black','Gray','<',20,'Black')
+        
+        #What state is the menu in
+        self.menustate = 'main'
+        
+        #used to track what page you're on when on level select
+        self.page = 1
+    
+    def draw(self,c):
+        if self.menustate == 'main' or self.menustate == 'level select':
+            self.draw_main(c)
+        elif self.menustate == 'inlevel' or self.menustate == 'postlevel':
+            self.draw_inlevel(c)
+    
+    def draw_main(self,c):
+        self.sky_remove = []
+        
+        #Find off screen skys and draw skys
+        for idx, sky in enumerate(self.skys):
+            c.draw_image(menu_sky,[515,350],[1030,700],[sky,350],[1030,700])
+            self.skys[idx] -= 1
+            if sky <= -515:
+                #1 is subtracted to compensate for subtracting the 1 above
+                self.sky_remove.append(sky - 1)          
+        
+        #remove skys that need removing and adds a new sky to continue the loop
+        for sky in self.sky_remove:
+            if sky in self.skys:
+                self.skys.remove(sky)
+                self.skys.append(1533)
+            
+        #Draw foreground    
+        c.draw_image(menu_image,[515,350],[1030,700],[515,350],[1030,700])
+        
+        #Draw play Button and level select button
+        if self.menustate == 'main':
+            self.play_button.draw(c)
+            self.lvlsel_bttn.draw(c)
+        
+        #redirects to another function to draw level selection related things
+        elif self.menustate == 'level select':
+            self.draw_levelselect(c)
+            
+        #Draws score
+        if self.menustate == 'main':
+            c.draw_text("SCORE:" + str(GLOBAL.score),[650,250],45,'Black','monospace')
+        
+    def draw_levelselect(self,c):
+        #draws all the level buttons
+        for idx,button in enumerate(self.levelselect_buttons):
+            if GLOBAL.completed[idx] == True:
+                button.outline = 'Green'
+            else:
+                button.outline = 'Red'
+            button.draw(c)
+            
+        #draws button to go back to the main menu    
+        self.back_button.draw(c)
+        
+        #draws right and left arrow buttons if they are needed
+        if len(self.levelselect_buttons) > 80 * self.page:
+            self.right_button.draw(c)
+        if self.page > 1:
+            self.left_button.draw(c)
+            
+        c.draw_text('Page ' + str(self.page),[620,220],30,'Black')
+        
+    def draw_inlevel(self,c):
+        #When on the start level screen, this draws the level for preview
+        ###################################
+        ###################################
+        ######FOR LEVEL PREVIEW############
+        ###################################
+        ###################################
+        #Variable used to track current position on grid when drawing level
+        self.grid_position = [40,40]
+        
+        #Draw Marble
+        c.draw_image(marble_image,[515,350],[1030,700],[515,350],[1030,700])     
+
+        #Draws water shadows
+        for row in GLOBAL.CURRENT_LVL.ground_layout:
+            for tile in row:
+                if tile == 'T' or tile == 'B' or tile == 'S':
+                    c.draw_image(water_shadow,[260,260],[520,520],[self.grid_position[0] + 25,self.grid_position[1] + 25],[100,100])
+                self.grid_position[0] += 50
+            self.grid_position[1] += 50
+            self.grid_position[0] = 40    
+        
+        #Draw Boxes before tiles for sink effect
+        for box in GLOBAL.CURRENT_LVL.boxes:
+            if box.state == 'drown':
+                box.draw(c)
+        
+        #Draw Water
+        c.draw_image(water_image,[515,350],[1030,700],[515,350],[1030,700])        
+        
+        #Reset Grid Position
+        self.grid_position = [40,40]     
+        
+        #Draws the ground_layout
+        for row in GLOBAL.CURRENT_LVL.ground_layout:
+            for tile in row:
+                c.draw_image(tile_dictionary[tile],[130,130],[260,260],self.grid_position,[50,50])
+                self.grid_position[0] += 50
+            self.grid_position[1] += 50
+            self.grid_position[0] = 40            
+        
+        #Draws any X tiles
+        for tile in GLOBAL.CURRENT_LVL.xice:
+            tile.draw(c)
+        for tile in GLOBAL.CURRENT_LVL.xbox:
+            tile.draw(c)
+            
+        #Draws boxes
+        for box in GLOBAL.CURRENT_LVL.boxes:
+            if not box.state == 'drown':
+                box.draw(c)
+                
+        #Draws HotBar Items and Border
+        c.draw_image(border_image,[515,350],[1030,700],[515,350],[1030,700])
+        c.draw_polygon([[100,640],[300,640],[300,698],[100,698]],5,'Black')
+        c.draw_text('TIME: ' + str(GLOBAL.CURRENT_LVL.time),[115,680],40,'Black')
+        c.draw_polygon([[300,640],[500,640],[500,698],[300,698]],5,'Black')
+        c.draw_text('LEVEL ' + str(GLOBAL.CURRENT_LVL_IDX + 1),[315,680],40,'Black')
+        self.exit_button.center = [550,665]
+        self.exit_button.draw(c)
+        
+        if self.menustate == 'inlevel':
+            #Draws info box on start of level
+            c.draw_polygon([[300,150],[730,150],[730,500],[300,500]],3,'Black','rgb(205,175,149)')
+            c.draw_text('~*SILVERBALL*~',[315,210],50,'Black')
+            c.draw_text('LEVEL: ' + str(GLOBAL.CURRENT_LVL_IDX + 1),[465,235],25,'Black')
+            c.draw_text('NAME',[478,318],25,'Black','sans-serif')
+            c.draw_text('_____',[479,317],25,'Black','sans-serif')
+            c.draw_text(GLOBAL.CURRENT_LVL.name,[420,350],35,'Black','sans-serif')
+            self.play_button_inlevel.center = [515,430]
+            self.play_button_inlevel.draw(c)
+            
+        elif self.menustate == 'postlevel':
+            c.draw_polygon([[50,100],[300,100],[300,550],[50,550]],3,'Black','rgb(205,175,149)')
+            c.draw_text('LEVEL ' + str(GLOBAL.CURRENT_LVL_IDX + 1),[90,155],33,'Black')
+            c.draw_text('COMPLETE!!',[70,187],33,'Black')
+            c.draw_text('SCORE:',[53,260],30,'Black','monospace')
+            c.draw_text(str(GLOBAL.current_score),[53,295],30,'Black','monospace')
+            c.draw_text('TOTAL SCORE:',[53,345],30,'Black','monospace')
+            c.draw_text(str(GLOBAL.score),[53,380],30,'Black','monospace')
+            self.next_level_button.center = [150,500]
+            self.next_level_button.draw(c)
+            
+        ###################################
+        ###################################
+        ######FOR LEVEL PREVIEW############
+        ###################################
+        ###################################
+        
+    def mouse(self,pos):
+        #when in the main menu state
+        if self.menustate == 'main':
+            #if play button is pressed, menu state changes to preview the level. Level 1 is selected. Level is reset
+            if self.play_button.click(pos):
+                self.menustate = 'inlevel'
+                GLOBAL.CURRENT_LVL_IDX = 0
+                Game_Reset()
+            elif self.lvlsel_bttn.click(pos):
+                self.menustate = 'level select'
+        
+        elif self.menustate == 'level select':
+            #detects when any of the level buttons are clicked in level select
+            for idx,bttn in enumerate(self.levelselect_buttons):
+                if bttn.click(pos):
+                    self.menustate = 'inlevel'
+                    GLOBAL.CURRENT_LVL_IDX = idx
+                    Game_Reset()
+            
+            #Button to return to main menu from level select
+            if self.back_button.click(pos):
+                self.menustate = 'main'
+                
+            #Right and left arrow buttons to switch pages
+            if self.right_button.click(pos) and len(self.levelselect_buttons) > 80 * self.page:
+                self.page += 1
+                for button in self.levelselect_buttons:
+                    button.center[1] -= 700
+                    
+            if self.left_button.click(pos) and self.page > 1:
+                self.page -= 1
+                for button in self.levelselect_buttons:
+                    button.center[1] += 700
+        
+        elif self.menustate == 'inlevel':
+            #When in level preview, press play to begin level
+            if self.play_button_inlevel.click(pos):
+                GLOBAL.gamestate = 'Ingame'
+            #X button at bottom hotbar to exit to main menu
+            elif self.exit_button.click(pos):
+                self.menustate = 'main'
+                
+        elif self.menustate == 'postlevel':
+            #X button at bottom hotbar to exit to main menu
+            if self.exit_button.click(pos):
+                self.menustate = 'main'
+            #When level is beaten, press next level to move to next level.
+            elif self.next_level_button.click(pos):
+                if len(GLOBAL.levels) < GLOBAL.CURRENT_LVL_IDX + 2:
+                    self.menustate = 'main'
+                else:
+                    GLOBAL.CURRENT_LVL_IDX += 1
+                    Game_Reset()
+                    self.menustate = 'inlevel'
+        
+        
+
+#Creates a custom button which returns true when clicked on
+class Button:
+    def __init__(self,center,image,image_size,desired_size,outline = 'Black',fill = 'Black',text = 'text',textsize = 20,textcolor = 'White'):
+        self.center = center
+        self.image = image
+        self.image_size = image_size
+        self.desired_size = desired_size
+        
+        #If the button is manually customized. Must pass 'rect' as image parameter to use this
+        self.outline = outline
+        self.fill = fill
+        self.text = text
+        self.textsize = textsize
+        self.textcolor = textcolor
+        
+    def draw(self,c):
+        if self.image == 'rect':
+            c.draw_polygon([[self.center[0] - (self.desired_size[0] / 2), self.center[1] - (self.desired_size[1] / 2)],
+                            [self.center[0] + (self.desired_size[0] / 2), self.center[1] - (self.desired_size[1] / 2)],
+                            [self.center[0] + (self.desired_size[0] / 2), self.center[1] + (self.desired_size[1] / 2)],
+                            [self.center[0] - (self.desired_size[0] / 2), self.center[1] + (self.desired_size[1] / 2)]],
+                           5,self.outline,self.fill)
+            c.draw_text(self.text,[(self.center[0] - (self.desired_size[0] / 2)) + 5, (self.center[1] + (self.desired_size[1] / 2)) - 15],self.textsize,self.textcolor)
+        else:
+            c.draw_image(self.image,[self.image_size[0] / 2, self.image_size[1] / 2],self.image_size,self.center,self.desired_size)
+        
+    def click(self,pos):
+        if pos[0] >= self.center[0] - (self.desired_size[0] / 2) and pos[0] <= self.center[0] + (self.desired_size[0] / 2) and pos[1] >= self.center[1] - (self.desired_size[1] / 2) and pos[1] <= self.center[1] + (self.desired_size[1] / 2):
+            return True
+        
+#Class Instances               
+STACK = Stack()
+GLOBAL = global_store()
+
+GLOBAL.define_levels()
+#make the completed list as long as the amount of levels
+for level in GLOBAL.levels:
+    GLOBAL.completed.append(False)
+
+#A temporary variable that is used once to track button position as buttons are drawn
+bttn_pos = [95.5,300]    
+    
+#adds level select buttons    
+for idx,level in enumerate(GLOBAL.levels):
+    GLOBAL.MENU.levelselect_buttons.append(Button(bttn_pos[:],'rect',[0,0],[87,40],'Red','rgb(102,144,178)','Level ' + str(idx + 1),20,'White'))
+    bttn_pos[0] += 93
+    if bttn_pos[0] >= 935:
+        bttn_pos[1] += 50
+        bttn_pos[0] = 95.5
+    if bttn_pos[1] % 700 == 0:
+        bttn_pos[1] += 300
+    
+def Game_Reset():
+    global GLOBAL
+    GLOBAL.define_levels()
+    GLOBAL.CURRENT_LVL = GLOBAL.levels[GLOBAL.CURRENT_LVL_IDX]
+
+def reset_time():
+    Game_Reset()
+    GLOBAL.gamestate = 'Menu'
+    reset_timer.stop()
+
+def post_time():            
+    #Set to 0 and changed below if the level hasn't been beaten before
+    GLOBAL.current_score = 0
+            
+    #If the level hasn't been previously completed, add time left * 100 to the total score
+    if GLOBAL.completed[GLOBAL.CURRENT_LVL_IDX] == False:
+        GLOBAL.score += GLOBAL.CURRENT_LVL.time * 100
+        GLOBAL.current_score = GLOBAL.CURRENT_LVL.time * 100
+            
+    #Sets the level to complete
+    GLOBAL.completed[GLOBAL.CURRENT_LVL_IDX] = True
+            
+    #Opens post level screen
+    GLOBAL.MENU.menustate = 'postlevel'
+    GLOBAL.gamestate = 'Menu'
+    post_timer.stop()
+    
+#Main Draw Function  
+def draw(c):
+    if GLOBAL.gamestate == 'Ingame':
+        GLOBAL.CURRENT_LVL.draw_level(c)
+    
+    elif GLOBAL.gamestate == 'Menu':
+        GLOBAL.MENU.draw(c)
+
+#MOUSE BOI
+def mouse(pos):
+    if GLOBAL.gamestate == 'Menu':
+        GLOBAL.MENU.mouse(pos)
+    if GLOBAL.gamestate == 'Ingame':
+        GLOBAL.CURRENT_LVL.mouse(pos)
+        
+#Key Presses and GUI instantiation
+def keydown(key):
+    if key == simplegui.KEY_MAP["right"]:
+        STACK.push("r")
+    elif key == simplegui.KEY_MAP["left"]:
+        STACK.push("l")
+    elif key == simplegui.KEY_MAP["down"]:
+        STACK.push("d")
+    elif key == simplegui.KEY_MAP["up"]:
+        STACK.push("u")
+        
+def keyup(key):
+    if key == simplegui.KEY_MAP["right"]:
+        STACK.yank("r")
+    elif key == simplegui.KEY_MAP["left"]:
+        STACK.yank("l")
+    elif key == simplegui.KEY_MAP["down"]:
+        STACK.yank("d")
+    elif key == simplegui.KEY_MAP["up"]:
+        STACK.yank("u")
+    
+f = simplegui.create_frame("SilverSphere Clone",1030,700)
+f.set_draw_handler(draw)
+f.set_keydown_handler(keydown)
+f.set_keyup_handler(keyup)
+f.set_mouseclick_handler(mouse)
+f.start()
+
+reset_timer = simplegui.create_timer(1000,reset_time)
+post_timer = simplegui.create_timer(630,post_time)
