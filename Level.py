@@ -1,20 +1,27 @@
-import Button
+import pygame
+import Constants
+
+# GROUND LAYOUT
+# T = Normal Tile
+# W = Blank Spot
+# B = Iron block
+
+tile_dictionary = {'T': Constants.FLOOR_TILE_IMAGE, 'B': Constants.IRON_TILE_IMAGE, 'W': None, 'S': None}
+
 
 class Level:
-    def __init__(self, ground_layout, player_start_pos, vortex, boxes, name, time, global_class_reference, xbox=[], xice=[]):
-        # A reference to the class will be passed so it can be used
-        self.GLOBAL = global_class_reference
-
-        # Ground layout is a list of lists containing a grid of strings to draw the background of a level including tiles like
-        # regular ground, and iron blocks
+    def __init__(self, ground_layout, player_start_pos, vortex, boxes, name, time, xbox=(), xice=()):
+        # Ground layout is a list of lists containing a grid of strings to draw the background of a level including
+        # tiles like regular ground, and iron blocks
         self.ground_layout = ground_layout
-        # variables hold class instances for vortex tile, and any X tiles (xbox and xice are arrays of class instances of X_Ice_Tile and X_Box_Tile classes)
+        # variables hold class instances for vortex tile, and any X tiles (xbox and xice are arrays of class instances
+        # of X_Ice_Tile and X_Box_Tile classes)
         self.vortex = vortex
         self.xice = set(xice)
         self.xbox = set(xbox)
 
         # Player class instance
-        self.PLYR = Player(player_start_pos, player, player_up, player_down, player_right, player_left)
+        self.PLAYER = Player(player_start_pos, player, player_up, player_down, player_right, player_left)
 
         # list of boxes and explosions
         self.boxes = set(boxes)
@@ -35,19 +42,19 @@ class Level:
         self.second = 0
 
         # Exit Button
-        self.exit_button = Button.Button([0, 0], self.GLOBAL.exit_icon, [50, 50])
+        self.exit_button = Button([0, 0], exit_icon, [260, 260], [50, 50])
 
     def mouse(self, pos):
         if self.exit_button.click(pos):
-            self.GLOBAL.MENU.menustate = 'main'
-            self.GLOBAL.gamestate = 'Menu'
+            GLOBAL.MENU.menustate = 'main'
+            GLOBAL.gamestate = 'Menu'
 
     def draw_level(self, canvas):
         # Variable used to track current position on grid when drawing level
         self.grid_position = [40, 40]
 
         # Draw Marble
-        canvas.draw_image(self.GLOBAL.marble_image, [515, 350], [1030, 700], [515, 350], [1030, 700])
+        canvas.draw_image(marble_image, [515, 350], [1030, 700], [515, 350], [1030, 700])
 
         # Draws water shadows
         for row in self.ground_layout:

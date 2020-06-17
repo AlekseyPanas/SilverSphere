@@ -1,44 +1,80 @@
 import pygame
-from pygame.rect import Rect
+
 
 class Button:
-    def __init__(self, center, image, desired_size, outline=(0, 0, 0), fill=(0, 0, 0), text='text',
-                 textsize=20, textcolor=(255,255,255)):
-        self.center = center
-        self.desired_size = desired_size
-        # sets the images and resizes it right away to desired size (unless 'rect' is passed)
-        if image != 'rect':
-            self.image = pygame.transform.scale(image, self.desired_size)
+    def __init__(self, top_left_corner, size, image, box=False, border_color=(0, 0, 0), text_color=(40, 40, 40),
+                 fill_color=(255, 255, 255), text="", border_thickness=0, font=None, state_quantity=3):
+        # Position of top left corner of button.
+        self.top_left = top_left_corner
+
+        # Width/height of image and the loaded image.
+        self.size = size
+        self.image = None
+        if image is not None:
+            self.image = pygame.transform.scale(image, (size[0], size[1] * state_quantity))
+
+        # Image contains 2 states of the button. These 2 surfaces will hold each state.
+        self.static = pygame.Surface(self.size, pygame.SRCALPHA, 32)
+        self.hover = pygame.Surface(self.size, pygame.SRCALPHA, 32)
+        self.pressed = pygame.Surface(self.size, pygame.SRCALPHA, 32)
+
+        self.border_color = border_color
+        self.fill_color = fill_color
+        self.border_thickness = border_thickness
+
+        self.font = font
+        self.text = text
+        self.text_color = text_color
+
+        if not box:
+            self.static.blit(self.image, (0, 0))
+            self.hover.blit(self.image, (0, -self.size[1]))
+            self.pressed.blit(self.image, (0, -2 * self.size[1]))
         else:
-            self.image = image
+            self.static.fill(self.border_color)
+            pygame.draw.rect(self.static, self.fill_color, (border_thickness, border_thickness,
+                                                       self.size[0] - 2 * border_thickness,
+                                                       self.size[1] - 2 * border_thickness))
+            if font is not None:
+                rendered_text = font.render(text, True, text_color)
+                rect = rendered_text.get_rect()
+                rect.center = (self.size[0] / 2, self.size[1] / 2)
+                self.static.blit(rendered_text, rect)
 
-        # If the button is manually customized. Must pass 'rect' as image parameter to use this
-        self.outline = outline
-        self.fill = fill
-        self.font = pygame.font.SysFont('Comic Sans MS', textsize)
-        self.text = self.font.render(text, False, textcolor)
+            self.hover.blit(self.static, (0, 0))
 
-    def draw(self,screen):
-        if self.image == 'rect':
-            # Outline for button
-            pygame.draw.rect(screen, self.outline, Rect(
-                (self.center[0] - (self.desired_size[0] / 2) - 5, self.center[1] - (self.desired_size[1] / 2) - 5),
-                (self.desired_size[0] + 10, self.desired_size[1] + 10)))
-            # Fill color for button
-            pygame.draw.rect(screen, self.fill, Rect(
-                (self.center[0] - (self.desired_size[0] / 2), self.center[1] - (self.desired_size[1] / 2)),
-                (self.desired_size[0], self.desired_size[1])))
-            # Draw text on button
-            screen.blit(self.text, (
-                (self.center[0] - (self.desired_size[0] / 2)) + 5, (self.center[1] + (self.desired_size[1] / 2)) - 30))
+        self.button_rect = self.static.get_rect()
+        self.button_rect.center = top_left_corner[0] + size[0] / 2, top_left_corner[1] + size[1] / 2
+
+        self.button_state = "static"
+
+    def set_colors(self, fill_color=None, border_color=None):
+        if fill_color is not None:
+            self.fill_color = fill_color
+        if border_color is not None:
+            self.border_color = border_color
+
+        self.static.fill(self.border_color)
+        pygame.draw.rect(self.static, self.fill_color, (self.border_thickness, self.border_thickness,
+                                                        self.size[0] - 2 * self.border_thickness,
+                                                        self.size[1] - 2 * self.border_thickness))
+        if self.font is not None:
+            rendered_text = self.font.render(self.text, True, self.text_color)
+            rect = rendered_text.get_rect()
+            rect.center = (self.size[0] / 2, self.size[1] / 2)
+            self.static.blit(rendered_text, rect)
+
+        self.hover.blit(self.static, (0, 0))
+
+    def draw(self, screen):
+        if self.button_state == "pressed":
+            screen.blit(self.pressed, self.top_left)
         else:
-            # draws image
-            screen.blit(self.image,
-                        (self.center[0] - (self.desired_size[0] / 2), self.center[1] - (self.desired_size[1] / 2)))
+            screen.blit(self.hover if self.button_state == "hover" else self.static, self.top_left)
 
-    def click(self, pos):
-        # Detects if this button was clicked and returns true
-        if pos[0] >= self.center[0] - (self.desired_size[0] / 2) and pos[0] <= self.center[0] + (
-                self.desired_size[0] / 2) and pos[1] >= self.center[1] - (self.desired_size[1] / 2) and pos[1] <= \
-                self.center[1] + (self.desired_size[1] / 2):
-            return True
+    def is_hover(self, pos):
+        if not self.button_state == "pressed":
+            self.button_state = "hover" if pygame.Rect(self.top_left, self.size).collidepoint(pos) else "static"
+
+    def is_clicked(self, pos):
+        return pygame.Rect(self.top_left, self.size).collidepoint(pos)
