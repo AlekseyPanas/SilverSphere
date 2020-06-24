@@ -3,7 +3,8 @@ pygame.init()
 
 SCREEN_SIZE = (1030, 700)
 #SCREEN_SIZE = (515, 350)
-
+#SCREEN_SIZE = (824, 560)
+#SCREEN_SIZE = (2060, 1400)
 
 class Stack:
     def __init__(self):
@@ -20,7 +21,7 @@ class Stack:
             self.items.remove(item)
 
     def peek(self):
-        if (len(self.items) > 0):
+        if len(self.items):
             return self.items[-1]
         else:
             return ""
@@ -32,9 +33,9 @@ class Stack:
 # Scales a set of coordinates to the current screen size based on a divisor factor
 def cscale(*coordinate, divisors=(1030, 700)):
     if len(coordinate) > 1:
-        return tuple([int(coordinate[x] / divisors[x % 2] * SCREEN_SIZE[x % 2]) for x in range(len(coordinate))])
+        return tuple([round(coordinate[x] / divisors[x % 2] * SCREEN_SIZE[x % 2]) for x in range(len(coordinate))])
     else:
-        return int(coordinate[0] / divisors[0] * SCREEN_SIZE[0])
+        return round(coordinate[0] / divisors[0] * SCREEN_SIZE[0])
 
 
 # Scales a set of coordinates to the current screen size based on a divisor factor. Doesn't return integers
@@ -50,7 +51,7 @@ def convert():
         IRON_TILE_IMAGE, VORTEX_TILE_IMAGE, VORTEX_CLOSE_IMAGE, VORTEX_OPEN_IMAGE, ICE_X_TILE_IMAGE, BOX_X_TILE_IMAGE, \
         BOX_IMAGE, ICE_IMAGE, BORDER_IMAGE, WATER_IMAGE, MARBLE_IMAGE, WATER_SHADOW_IMAGE, BALL_SHADOW_IMAGE, \
         MENU_FOREGROUND_IMAGE, MENU_SKY_IMAGE, EXIT_ICON_IMAGE, EXPLOSION_IMAGE, PLAY_BUTTON_IMAGE, \
-        INLEVEL_PLAY_BUTTON_IMAGE, NEXTLVL_BUTTON_IMAGE, LEVELS_BUTTON_IMAGE
+        INLEVEL_PLAY_BUTTON_IMAGE, NEXTLVL_BUTTON_IMAGE, LEVELS_BUTTON_IMAGE, LOCK_IMAGE
 
     PLAYER_IMAGE = PLAYER_IMAGE.convert_alpha()
     PLAYER_LEFT_IMAGE = PLAYER_LEFT_IMAGE.convert_alpha()
@@ -86,21 +87,22 @@ def convert():
     NEXTLVL_BUTTON_IMAGE = NEXTLVL_BUTTON_IMAGE.convert_alpha()
     LEVELS_BUTTON_IMAGE = LEVELS_BUTTON_IMAGE.convert_alpha()
 
+    LOCK_IMAGE = LOCK_IMAGE.convert_alpha()
 
 # Player Animation images
-PLAYER_IMAGE = pygame.transform.scale(pygame.image.load("assets/images/Silver Ball.png"), (1, 1))
-PLAYER_UP_IMAGE = pygame.transform.scale(pygame.image.load("assets/images/Silver Up.png"), (1, 1))
-PLAYER_DOWN_IMAGE = pygame.transform.scale(pygame.image.load("assets/images/Silver Ball Down.png"), (1, 1))
-PLAYER_RIGHT_IMAGE = pygame.transform.scale(pygame.image.load("assets/images/Silver Right.png"), (1, 1))
-PLAYER_LEFT_IMAGE = pygame.transform.scale(pygame.image.load("assets/images/Silver Left.png"), (1, 1))
+PLAYER_IMAGE = pygame.transform.smoothscale(pygame.image.load("assets/images/Silver Ball.png"), cscale(51, 51))
+PLAYER_UP_IMAGE = pygame.transform.smoothscale(pygame.image.load("assets/images/Silver Up.png"), cscale(204, 51))
+PLAYER_DOWN_IMAGE = pygame.transform.smoothscale(pygame.image.load("assets/images/Silver Ball Down.png"), cscale(204, 51))
+PLAYER_RIGHT_IMAGE = pygame.transform.smoothscale(pygame.image.load("assets/images/Silver Right.png"), cscale(204, 51))
+PLAYER_LEFT_IMAGE = pygame.transform.smoothscale(pygame.image.load("assets/images/Silver Left.png"), cscale(204, 51))
 
 # Tile Images
-FLOOR_TILE_IMAGE = pygame.transform.scale(pygame.image.load("assets/images/floor.png"), (1, 1))
-IRON_TILE_IMAGE = pygame.transform.scale(pygame.image.load("assets/images/iron.png"), (1, 1))
+FLOOR_TILE_IMAGE = pygame.transform.smoothscale(pygame.image.load("assets/images/floor.png"), (50, 50))
+IRON_TILE_IMAGE = pygame.transform.smoothscale(pygame.image.load("assets/images/iron.png"), (50, 50))
 
-VORTEX_TILE_IMAGE = pygame.transform.scale(pygame.image.load("assets/images/vortex anim.png"), (1, 1))
-VORTEX_OPEN_IMAGE = pygame.transform.scale(pygame.image.load("assets/images/vortex open.png"), (1, 1))
-VORTEX_CLOSE_IMAGE = pygame.transform.scale(pygame.image.load("assets/images/vortex close.png"), (1, 1))
+VORTEX_TILE_IMAGE = pygame.transform.smoothscale(pygame.image.load("assets/images/vortex anim.png"), cscale(770, 70))
+VORTEX_OPEN_IMAGE = pygame.transform.smoothscale(pygame.image.load("assets/images/vortex open.png"), cscale(630, 70))
+VORTEX_CLOSE_IMAGE = pygame.transform.smoothscale(pygame.image.load("assets/images/vortex close.png"), cscale(630, 70))
 ICE_X_TILE_IMAGE = pygame.transform.scale(pygame.image.load("assets/images/Xice.png"), (1, 1))
 BOX_X_TILE_IMAGE = pygame.transform.scale(pygame.image.load("assets/images/Xbox.png"), (1, 1))
 
@@ -110,13 +112,15 @@ ICE_IMAGE = pygame.transform.scale(pygame.image.load("assets/images/icecube.png"
 
 # Border Image
 BORDER_IMAGE = pygame.transform.scale(pygame.image.load("assets/images/border.png"), (1, 1))
-WATER_IMAGE = pygame.transform.scale(pygame.image.load("assets/images/water.png"), (1, 1))
-MARBLE_IMAGE = pygame.transform.scale(pygame.image.load("assets/images/marble background.png"), (1, 1))
-WATER_SHADOW_IMAGE = pygame.transform.scale(pygame.image.load("assets/images/shadow 2.png"), (1, 1))
-BALL_SHADOW_IMAGE = pygame.transform.scale(pygame.image.load("assets/images/ball shadow.png"), (1, 1))
+WATER_IMAGE = pygame.transform.scale(pygame.image.load("assets/images/water.png"), cscale(1000, 600))
+MARBLE_IMAGE = pygame.transform.scale(pygame.image.load("assets/images/marble background.png"), cscale(1000, 600))
+WATER_SHADOW_IMAGE = pygame.transform.scale(pygame.image.load("assets/images/shadow 2.png"), (100, 100))
+BALL_SHADOW_IMAGE = pygame.transform.smoothscale(pygame.image.load("assets/images/ball shadow.png"), cscale(57, 30))
 MENU_FOREGROUND_IMAGE = pygame.transform.scale(pygame.image.load("assets/images/title screen.png"), cscale(1030, 700))
 MENU_SKY_IMAGE = pygame.transform.scale(pygame.image.load("assets/images/cloud.png"), cscale(1030, 700))
 EXIT_ICON_IMAGE = pygame.transform.scale(pygame.image.load("assets/images/X.png"), (1, 1))
+
+LOCK_IMAGE = pygame.transform.scale(pygame.image.load("assets/images/lock_icon.png"), cscale(50, 50))
 
 EXPLOSION_IMAGE = pygame.transform.scale(pygame.image.load("assets/images/explosion.png"), (1, 1))
 
@@ -130,6 +134,14 @@ LEVELS_BUTTON_IMAGE = pygame.image.load("assets/images/level select button.png")
 # FONTS
 def get_impact(size):
     return pygame.font.SysFont("Impact", size)
+
+
+def get_arial(size):
+    return pygame.font.SysFont("Arial", size)
+
+
+def get_sans(size):
+    return pygame.font.SysFont("Comic Sans", size)
 
 
 BIGBOI_FONT = pygame.font.SysFont("Comic Sans", int(0.045 * SCREEN_SIZE[0]))

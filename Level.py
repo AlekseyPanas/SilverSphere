@@ -1,5 +1,10 @@
 import pygame
 import Constants
+import Sprite
+import time
+import Button
+import Globe
+import copy
 
 # GROUND LAYOUT
 # T = Normal Tile
@@ -10,142 +15,274 @@ tile_dictionary = {'T': Constants.FLOOR_TILE_IMAGE, 'B': Constants.IRON_TILE_IMA
 
 
 class Level:
-    def __init__(self, ground_layout, player_start_pos, vortex, boxes, name, time, xbox=(), xice=()):
+    def __init__(self, level_json):
         # Ground layout is a list of lists containing a grid of strings to draw the background of a level including
         # tiles like regular ground, and iron blocks
-        self.ground_layout = ground_layout
+        self.ground_layout = None
+
+        self.SPRITES = []
+        self.delete_sprites = set([])
+
+        # Since you shouldn't add sprites during iteration, they are queued to be added at the end of the loop
+        self.sprite_queue = set([])
+
+        '''
         # variables hold class instances for vortex tile, and any X tiles (xbox and xice are arrays of class instances
         # of X_Ice_Tile and X_Box_Tile classes)
-        self.vortex = vortex
         self.xice = set(xice)
         self.xbox = set(xbox)
-
-        # Player class instance
-        self.PLAYER = Player(player_start_pos, player, player_up, player_down, player_right, player_left)
-
+        
         # list of boxes and explosions
         self.boxes = set(boxes)
         self.explosions = set([])
         # list of explosions to remove
         self.remove_explosions = set([])
         self.remove_boxes = set([])
+        '''
+
+        # Popups for pre and post level
+        self.pre_level_popup_surf = None
+        self.play_button = Button.Button(Constants.cscale(425, 440), Constants.cscale(180, 60),
+                                         Constants.INLEVEL_PLAY_BUTTON_IMAGE, state_quantity=2)
+        self.post_level_popup_surf = None
+        self.next_level_button = Button.Button(Constants.cscale(55, 480), Constants.cscale(180, 60),
+                                               Constants.NEXTLVL_BUTTON_IMAGE, state_quantity=2)
+
+        # If true, game is paused
+        self.update_lock = True
+        # Prelevel and postlevel tracking variables
+        self.start_level = False
+        self.start_ending = False
+        self.end_timer = 0
 
         # Name of the level
-        self.name = name
+        self.name = None
 
         # If all X's have been satisfied, opens exit
         self.open_exit = False
 
         # Time to beat the level.  Time_Runout used as a runonce variable to run a chunk of code when time runs out
-        self.time = time
-        self.time_runout = 0
-        self.second = 0
+        self.time = None
+        self.time_runout = False
+        # Saves response from time.time() and then calculates the difference to count down in the level
+        self.start_time = 0
 
         # Exit Button
-        self.exit_button = Button([0, 0], exit_icon, [260, 260], [50, 50])
+        self.exit_button = Button.Button(Constants.cscale(700, 620), Constants.cscale(50, 50),
+                                         Constants.EXIT_ICON_IMAGE, state_quantity=2)
 
-    def mouse(self, pos):
-        if self.exit_button.click(pos):
-            GLOBAL.MENU.menustate = 'main'
-            GLOBAL.gamestate = 'Menu'
+        self.json = level_json
+        self.load_level(level_json)
 
-    def draw_level(self, canvas):
-        # Variable used to track current position on grid when drawing level
-        self.grid_position = [40, 40]
+        # Set this to true when the level has been failed and needs a restart
+        self.reset = False
+        # Set this to true when the level has been beaten
+        self.complete = False
 
-        # Draw Marble
-        canvas.draw_image(marble_image, [515, 350], [1030, 700], [515, 350], [1030, 700])
+        # Allows sprites to call a re-sort of the sprites
+        self.sort_needed = False
 
-        # Draws water shadows
+    def load_level(self, json):
+        self.name = json["name"]
+        self.time = json["time"]
+        self.ground_layout = json["layout"]
+        # Adds player ball to sprites list
+        self.add_sprite(Sprite.Player(None, 9, {"player"}, json["player_start"]))
+        # Adds vortex to sprites list
+        self.add_sprite(Sprite.Vortex(None, 8, {"vortex"}, json["vortex_pos"]))
+        # Adds image of ground layout to sprites
+        ground_layout_surf = pygame.Surface((1000, 600), pygame.SRCALPHA, 32)
+
+        # Draws the ground_layout
+        grid_position = [0, 0]
         for row in self.ground_layout:
             for tile in row:
-                if tile == 'T' or tile == 'B' or tile == 'S':
-                    canvas.draw_image(water_shadow, [260, 260], [520, 520],
-                                      [self.grid_position[0] + 25, self.grid_position[1] + 25], [100, 100])
-                self.grid_position[0] += 50
-            self.grid_position[1] += 50
-            self.grid_position[0] = 40
+                if tile_dictionary[tile] is not None:
+                    ground_layout_surf.blit(tile_dictionary[tile], grid_position)
+                grid_position[0] += 50
+            grid_position[1] += 50
+            grid_position[0] = 0
 
-            # Draws player before tiles (When sunken to create underwater effect)
-        if self.PLYR.state == 'drown':
-            self.PLYR.draw(canvas)
+        ground_layout_surf = pygame.transform.smoothscale(ground_layout_surf, Constants.cscale(1000, 600))
+        self.add_sprite(Sprite.StaticImage(None, -1, {}, ground_layout_surf, (15, 15)))
 
-            # Draw Boxes before tiles for sink effect
+        # Adds water
+        self.add_sprite(Sprite.StaticImage(None, -2, {}, Constants.WATER_IMAGE, (15, 15)))
+
+        # Adds shadows
+        ground_layout_surf = pygame.Surface((1000, 600), pygame.SRCALPHA, 32)
+
+        # Draws the ground_layout
+        grid_position = [0, 0]
+        for row in self.ground_layout:
+            for tile in row:
+                if tile == 'B' or tile == "S" or tile == "T":
+                    ground_layout_surf.blit(Constants.WATER_SHADOW_IMAGE, grid_position)
+                grid_position[0] += 50
+            grid_position[1] += 50
+            grid_position[0] = 0
+
+        ground_layout_surf = pygame.transform.smoothscale(ground_layout_surf, Constants.cscale(1000, 600))
+        self.add_sprite(Sprite.StaticImage(None, -4, {"shadows"}, ground_layout_surf, (15, 15)))
+
+        self.add_new_sprites()
+
+        # LOADS POPUPS FOR PRE AND POST LEVEL
+        self.pre_level_popup_surf = pygame.Surface((430, 350))
+        self.pre_level_popup_surf.fill((0, 0, 0))
+        pygame.draw.rect(self.pre_level_popup_surf, (205, 175, 149), pygame.Rect(3, 3, 424, 344))
+
+        rendered_text = Constants.get_arial(Constants.cscale(50, divisors=(1030,))).render('~*SILVERBALL*~', True, (0, 0, 0))
+        self.pre_level_popup_surf.blit(rendered_text, rendered_text.get_rect(center=(215, 40)))
+
+        rendered_text = Constants.get_arial(Constants.cscale(25, divisors=(1030,))).render('LEVEL:' + str(self.json["id"]), True, (0, 0, 0))
+        self.pre_level_popup_surf.blit(rendered_text, rendered_text.get_rect(center=(215, 80)))
+
+        rendered_text = Constants.get_arial(Constants.cscale(30, divisors=(1030,))).render('NAME', True, (0, 0, 0))
+        self.pre_level_popup_surf.blit(rendered_text, rendered_text.get_rect(center=(215, 160)))
+
+        rendered_text = Constants.get_arial(Constants.cscale(30, divisors=(1030,))).render('_____', True, (0, 0, 0))
+        self.pre_level_popup_surf.blit(rendered_text, rendered_text.get_rect(center=(215, 165)))
+
+        rendered_text = Constants.get_arial(Constants.cscale(35, divisors=(1030,))).render(self.json["name"], True, (0, 0, 0))
+        self.pre_level_popup_surf.blit(rendered_text, rendered_text.get_rect(center=(215, 210)))
+
+        self.pre_level_popup_surf = pygame.transform.smoothscale(self.pre_level_popup_surf, Constants.cscale(430, 350))
+
+        # POST LEVEL
+        self.post_level_popup_surf = pygame.Surface((250, 450))
+        self.post_level_popup_surf.fill((0, 0, 0))
+        pygame.draw.rect(self.post_level_popup_surf, (205, 175, 149), pygame.Rect(3, 3, 244, 444))
+
+        rendered_text = Constants.get_arial(Constants.cscale(40, divisors=(1030,))).render('LEVEL ' + str(self.json["id"]), True, (0, 0, 0))
+        self.post_level_popup_surf.blit(rendered_text, rendered_text.get_rect(center=(125, 40)))
+
+        rendered_text = Constants.get_arial(Constants.cscale(40, divisors=(1030,))).render('COMPLETE!!', True, (0, 0, 0))
+        self.post_level_popup_surf.blit(rendered_text, rendered_text.get_rect(center=(125, 80)))
+
+        rendered_text = Constants.get_sans(Constants.cscale(38, divisors=(1030,))).render('SCORE:', True, (0, 0, 0))
+        self.post_level_popup_surf.blit(rendered_text, (15, 160))
+
+        rendered_text = Constants.get_sans(Constants.cscale(36, divisors=(1030,))).render('PLC', True, (0, 0, 0))
+        self.post_level_popup_surf.blit(rendered_text, (15, 190))
+
+        rendered_text = Constants.get_sans(Constants.cscale(38, divisors=(1030,))).render('TOTAL SCORE:', True, (0, 0, 0))
+        self.post_level_popup_surf.blit(rendered_text, (15, 270))
+
+        rendered_text = Constants.get_sans(Constants.cscale(36, divisors=(1030,))).render('PLC', True, (0, 0, 0))
+        self.post_level_popup_surf.blit(rendered_text, (15, 300))
+
+        self.post_level_popup_surf = pygame.transform.smoothscale(self.post_level_popup_surf, Constants.cscale(250, 450))
+
+    def run_level(self, screen):
+        # Draw Marble
+        screen.blit(Constants.MARBLE_IMAGE, Constants.cscale(15, 15))
+
+        if not self.update_lock and not self.start_ending:
+            self.update()
+
+        self.manage_sprites(screen)
+
+        # Draws HotBar Items and Border
+        
+
+        """
+        canvas.draw_image(border_image, [515, 350], [1030, 700], [515, 350], [1030, 700])
+        canvas.draw_polygon([[100, 640], [300, 640], [300, 698], [100, 698]], 5, 'Black')
+        canvas.draw_text('TIME: ' + str(self.time), [115, 680], 40, 'Black')
+        canvas.draw_polygon([[300, 640], [500, 640], [500, 698], [300, 698]], 5, 'Black')
+        canvas.draw_text('LEVEL ' + str(GLOBAL.CURRENT_LVL_IDX + 1), [315, 680], 40, 'Black')
+        self.exit_button.center = [550, 665]
+        self.exit_button.draw(canvas)"""
+
+        # Manage prelevel menu
+        if not self.start_level:
+            screen.blit(self.pre_level_popup_surf, self.pre_level_popup_surf.get_rect(center=(Constants.SCREEN_SIZE[0] / 2, Constants.SCREEN_SIZE[1] / 2)))
+
+            self.play_button.draw(screen)
+            self.play_button.is_hover(pygame.mouse.get_pos())
+            for event in Globe.events:
+                if event.type == pygame.MOUSEBUTTONUP:
+                    if self.play_button.is_clicked(event.pos):
+                        self.start_level = True
+                        self.update_lock = False
+                        self.start_time = copy.copy(time.time())
+
+        # Manage post menu level
+        if self.start_ending:
+            if self.end_timer < 50:
+                self.end_timer += 1
+            else:
+                self.update_lock = True
+
+                # Draws post-level menu
+                screen.blit(self.post_level_popup_surf, self.post_level_popup_surf.get_rect(
+                    center=Constants.cscale(160, 330)))
+
+                self.next_level_button.draw(screen)
+                self.next_level_button.is_hover(pygame.mouse.get_pos())
+                for event in Globe.events:
+                    if event.type == pygame.MOUSEBUTTONUP:
+                        if self.next_level_button.is_clicked(event.pos):
+                            self.complete = True
+
+        if self.sort_needed:
+            self.sort_needed = False
+            self.sort_sprites()
+
+    def event_handler(self):
+        for event in Globe.events:
+            if event.type == pygame.MOUSEBUTTONUP:
+                if self.exit_button.is_clicked(event.pos):
+                    Globe.MENU.menu_state = 'main'
+
+    def add_sprite(self, sprite):
+        self.sprite_queue.add(sprite)
+
+    def manage_sprites(self, screen):
+        # Runs sprites
+        for sprite in self.SPRITES:
+            sprite.run_sprite(screen, self.update_lock)
+
+            # Deletes killed sprites
+            if sprite.kill:
+                self.delete_sprites.add(sprite)
+            # Manages lifetime
+            if sprite.lifetime is not None and not self.update_lock:
+                if sprite.lifetime <= 0:
+                    self.delete_sprites.add(sprite)
+                sprite.lifetime -= 1
+
+        # Removes dead sprites
+        for sprite in self.delete_sprites:
+            if sprite in self.SPRITES:
+                self.SPRITES.remove(sprite)
+
+        self.add_new_sprites()
+
+    def add_new_sprites(self):
+        # Add new sprites
+        for sprite in self.sprite_queue:
+            self.SPRITES.append(sprite)
+        if len(self.sprite_queue):
+            self.sort_sprites()
+            self.sprite_queue = set([])
+
+    def sort_sprites(self):
+        self.SPRITES = sorted(self.SPRITES, key=lambda spr: spr.z_order)
+
+    def update(self):
+        """# Draw Boxes before tiles for sink effect
         for box in self.boxes:
             if box.state == 'drown':
                 box.draw(canvas)
 
-        # Draw Water
-        canvas.draw_image(water_image, [515, 350], [1030, 700], [515, 350], [1030, 700])
 
-        # Reset Grid Position
-        self.grid_position = [40, 40]
-
-        # Draws the ground_layout
-        for row in self.ground_layout:
-            for tile in row:
-                canvas.draw_image(tile_dictionary[tile], [130, 130], [260, 260], self.grid_position, [50, 50])
-                self.grid_position[0] += 50
-            self.grid_position[1] += 50
-            self.grid_position[0] = 40
-
-        # Detects if all X marks are satisfied. open_exit initially set to false
-        self.open_exit = False
-        # temporary array to report the status of each x mark
-        self.x_satisfaction = []
-        # Temporary variable to tell if TRUE has already been added to the list
-        self.status_added = False
-        # If there are no Xs, exit opens automatically
-        if len(self.xice) == 0 and len(self.xbox) == 0:
-            self.open_exit = True
-        else:
-            # Adds the state of each X to the satisfaction list
-            for x in self.xice:
-                for box in self.boxes:
-                    if box.__name__ == 'IceCube' and box.coords == x.coords:
-                        self.x_satisfaction.append(True)
-                        self.status_added = True
-                if self.status_added == False:
-                    self.x_satisfaction.append(False)
-                self.status_added = False
-
-            # status added set to false
-            self.status_added = False
-
-            for x in self.xbox:
-                for box in self.boxes:
-                    if box.__name__ == 'Box' and box.coords == x.coords:
-                        self.x_satisfaction.append(True)
-                        self.status_added = True
-                if self.status_added == False:
-                    self.x_satisfaction.append(False)
-                self.status_added = False
-
-            # If all Xs are satisfied, exit opens
-            # print(self.x_satisfaction)
-            # print(False in self.x_satisfaction)
-            # print(not (False in self.x_satisfaction))
-            if not (False in self.x_satisfaction):
-                self.open_exit = True
-
-                # controls animations with vortex
-        if self.open_exit == True and self.vortex.state == 'blank':
-            self.vortex.set_image = False
-            self.vortex.state = 'open'
-        elif self.open_exit == False and self.vortex.state == 'stationary':
-            self.vortex.set_image = False
-            self.vortex.state = 'close'
-
-        # Draws the vortex and any X tiles
-        self.vortex.draw(canvas)
+        # Draws X tiles
         for tile in self.xice:
             tile.draw(canvas)
         for tile in self.xbox:
             tile.draw(canvas)
-
-        # Draws Player After Tiles
-        if not self.PLYR.state == 'drown':
-            self.PLYR.draw(canvas)
 
         # Draws boxes
         for box in self.boxes:
@@ -157,17 +294,47 @@ class Level:
             expl.animate(canvas)
             if expl.lifetime >= 64:
                 self.remove_explosions.add(expl)
+        """
 
-        # Draws HotBar Items and Border
-        canvas.draw_image(border_image, [515, 350], [1030, 700], [515, 350], [1030, 700])
-        canvas.draw_polygon([[100, 640], [300, 640], [300, 698], [100, 698]], 5, 'Black')
-        canvas.draw_text('TIME: ' + str(self.time), [115, 680], 40, 'Black')
-        canvas.draw_polygon([[300, 640], [500, 640], [500, 698], [300, 698]], 5, 'Black')
-        canvas.draw_text('LEVEL ' + str(GLOBAL.CURRENT_LVL_IDX + 1), [315, 680], 40, 'Black')
-        self.exit_button.center = [550, 665]
-        self.exit_button.draw(canvas)
+        self.event_handler()
 
-        # removes explosions and boxes that need removing. Cleares explosion list in between
+        xice = [sprite for sprite in self.SPRITES if "xice" in sprite.tags]
+        xbox = [sprite for sprite in self.SPRITES if "xbox" in sprite.tags]
+        boxes = [sprite for sprite in self.SPRITES if "box" in sprite.tags]
+        vortex = [sprite for sprite in self.SPRITES if "vortex" in sprite.tags][0]
+
+        # Detects if all X marks are satisfied. open_exit initially set to false
+        self.open_exit = False
+        # temporary array to report the status of each x mark
+        x_satisfaction = True
+        # If there are no Xs, exit opens automatically
+        if not len(xice) and not len(xbox):
+            self.open_exit = True
+        else:
+            # Checks if any X's aren't satisfied
+            for x in xice:
+                for box in boxes:
+                    if not ("icecube" in box.tags and box.coords == x.coords):
+                        x_satisfaction = False
+
+            for x in xbox:
+                for box in boxes:
+                    if not (box.coords == x.coords):
+                        x_satisfaction = False
+
+            # If all Xs are satisfied, exit opens
+            if x_satisfaction:
+                self.open_exit = True
+
+        # controls animations with vortex
+        if self.open_exit and vortex.state == 'blank':
+            vortex.set_image = False
+            vortex.state = 'open'
+        elif not self.open_exit and vortex.state == 'stationary':
+            vortex.set_image = False
+            vortex.state = 'close'
+
+        """# removes explosions and boxes that need removing. Cleares explosion list in between
         for expl in self.remove_explosions:
             if expl in self.explosions:
                 self.explosions.remove(expl)
@@ -192,4 +359,4 @@ class Level:
             self.time_runout = 1
             self.explosions.add(Explode(self.PLYR.pos))
 
-        self.second += 1
+        self.second += 1"""

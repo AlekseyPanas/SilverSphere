@@ -3,6 +3,7 @@ import Constants
 import json
 import Globe
 import pygame
+import Level
 
 
 # class that controls the entire main menu
@@ -20,11 +21,6 @@ class Menu:
                                          Constants.PLAY_BUTTON_IMAGE, state_quantity=2)
         self.lvlsel_bttn = Button.Button(Constants.cscale(300, 230), Constants.cscale(160, 55),
                                          Constants.LEVELS_BUTTON_IMAGE, state_quantity=2)
-
-        # TRANSFER TO LEVEL CLASS
-        #self.play_button_inlevel = Button([420, 400], inlevel_play_button_image, [300, 100], [180, 60])
-        #self.next_level_button = Button([200, 400], next_level_button_image, [300, 100], [180, 60])
-        #self.exit_button = Button([0, 0], exit_icon, [260, 260], [50, 50])
 
         self.back_button = Button.Button(Constants.cscale(515, 210), Constants.cscale(100, 30), None, box=True,
                                          text="BACK", border_thickness=Constants.cscale(4),
@@ -45,6 +41,11 @@ class Menu:
 
         # What state is the menu in
         self.menu_state = 'main'
+
+        self.GAME = None
+
+        # Used to count when game is over or level is completed
+        self.reset_counter = 0
 
     def generate_buttons(self):
         # Creates buttons for each of the levels
@@ -70,8 +71,23 @@ class Menu:
     def run_menu(self, screen):
         if self.menu_state == 'main' or self.menu_state == 'level select':
             self.run_main(screen)
-        elif self.menu_state == 'inlevel' or self.menu_state == 'postlevel':
-            self.draw_inlevel(screen)
+        elif self.menu_state == 'game':
+            self.GAME.run_level(screen)
+
+            if self.GAME.reset:
+                self.reset_counter += 1
+
+                if self.reset_counter > 50:
+                    self.reset_counter = 0
+                    self.start_game(self.GAME.json["id"] - 1)
+
+            elif self.GAME.complete:
+                self.completed[self.GAME.json["id"] - 1] = True
+                self.levelselect_buttons[self.GAME.json["id"] - 1].set_colors(border_color=(60, 200, 60))
+                if self.GAME.json["id"] + 1 > len(self.levels):
+                    self.menu_state = "main"
+                else:
+                    self.start_game(self.GAME.json["id"])
 
     def run_main(self, screen):
         self.sky_remove = []
@@ -99,7 +115,10 @@ class Menu:
                 if self.menu_state == "main":
                     if self.play_button.is_clicked(event.pos):
                         # Takes you to the next uncompleted level
-                        pass
+                        for idx in range(len(self.completed)):
+                            if not self.completed[idx]:
+                                self.start_game(idx)
+                                return
                     if self.lvlsel_bttn.is_clicked(event.pos):
                         self.menu_state = 'level select'
 
@@ -127,42 +146,23 @@ class Menu:
             # Draws buttons
             button.draw(screen)
             button.is_hover(pygame.mouse.get_pos())
+            if not idx == 0:
+                if not self.completed[idx - 1]:
+                    screen.blit(Constants.LOCK_IMAGE, Constants.LOCK_IMAGE.get_rect(center=button.button_rect.center))
 
-        # draws all the level buttons
         for event in Globe.events:
             for idx, button in enumerate(self.levelselect_buttons):
                 # Checks for presses on buttons
                 if event.type == pygame.MOUSEBUTTONUP:
                     if button.is_clicked(event.pos):
-                        print(self.levels[idx]["id"])
+                        if idx == 0 or self.completed[idx - 1]:
+                            self.start_game(idx)
+                            return
 
             if event.type == pygame.MOUSEBUTTONUP:
                 if self.back_button.is_clicked(event.pos):
                     self.menu_state = 'main'
 
-    def draw_inlevel(self, c):
-        pass
-
-        # Remake in level class
-        '''if self.menustate == 'inlevel':
-            # Draws info box on start of level
-            c.draw_polygon([[300, 150], [730, 150], [730, 500], [300, 500]], 3, 'Black', 'rgb(205,175,149)')
-            c.draw_text('~*SILVERBALL*~', [315, 210], 50, 'Black')
-            c.draw_text('LEVEL: ' + str(GLOBAL.CURRENT_LVL_IDX + 1), [465, 235], 25, 'Black')
-            c.draw_text('NAME', [478, 318], 25, 'Black', 'sans-serif')
-            c.draw_text('_____', [479, 317], 25, 'Black', 'sans-serif')
-            c.draw_text(GLOBAL.CURRENT_LVL.name, [420, 350], 35, 'Black', 'sans-serif')
-            self.play_button_inlevel.center = [515, 430]
-            self.play_button_inlevel.draw(c)
-
-        elif self.menustate == 'postlevel':
-            c.draw_polygon([[50, 100], [300, 100], [300, 550], [50, 550]], 3, 'Black', 'rgb(205,175,149)')
-            c.draw_text('LEVEL ' + str(GLOBAL.CURRENT_LVL_IDX + 1), [90, 155], 33, 'Black')
-            c.draw_text('COMPLETE!!', [70, 187], 33, 'Black')
-            c.draw_text('SCORE:', [53, 260], 30, 'Black', 'monospace')
-            c.draw_text(str(GLOBAL.current_score), [53, 295], 30, 'Black', 'monospace')
-            c.draw_text('TOTAL SCORE:', [53, 345], 30, 'Black', 'monospace')
-            c.draw_text(str(GLOBAL.score), [53, 380], 30, 'Black', 'monospace')
-            self.next_level_button.center = [150, 500]
-            self.next_level_button.draw(c)
-        '''
+    def start_game(self, idx):
+        self.GAME = Level.Level(self.levels[idx])
+        self.menu_state = 'game'

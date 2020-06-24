@@ -31,17 +31,7 @@ class Button:
             self.hover.blit(self.image, (0, -self.size[1]))
             self.pressed.blit(self.image, (0, -2 * self.size[1]))
         else:
-            self.static.fill(self.border_color)
-            pygame.draw.rect(self.static, self.fill_color, (border_thickness, border_thickness,
-                                                       self.size[0] - 2 * border_thickness,
-                                                       self.size[1] - 2 * border_thickness))
-            if font is not None:
-                rendered_text = font.render(text, True, text_color)
-                rect = rendered_text.get_rect()
-                rect.center = (self.size[0] / 2, self.size[1] / 2)
-                self.static.blit(rendered_text, rect)
-
-            self.hover.blit(self.static, (0, 0))
+            self.set_colors(fill_color, border_color)
 
         self.button_rect = self.static.get_rect()
         self.button_rect.center = top_left_corner[0] + size[0] / 2, top_left_corner[1] + size[1] / 2

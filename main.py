@@ -31,4 +31,15 @@ while Globe.running:
         last_fps_show = 0
 
     # fps max 60
-    clock.tick(60)
+    clock.tick(45)
+
+'''
+Optimization suggestions
+- Optimize pre-detect for player to detect only a single direction
+- Optimize level class to contain pointers to vortex and other important sprites
+
+Progress point
+
+
+- "vortex" "box" "player" "xice" "xbox" "icecube" tags for respective sprites
+'''
