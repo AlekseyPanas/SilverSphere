@@ -1,0 +1,5 @@
+Beat each level as fast as you can and then log your total score once all levels have been completed
+============================
+PLACE   |   SCORE   |   NAME
+----------------------------
+1           81100       Alex

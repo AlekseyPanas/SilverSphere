@@ -16,6 +16,9 @@ v.2.0:
         - X tiles are drawn above metal box tiles
         - Ball shadow extends past game window
         - A drowned box on the same tile as a drowned yellow ball doesn't have proper draw order
+        - If a level is beaten with a better time, no additional score is given
+    ISSUES:
+        - Movement isn't smooth. Add smooth movement by using division
 
 v.1.0:
     - Port game from codeskulptor
