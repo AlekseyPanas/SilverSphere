@@ -1,0 +1,41 @@
+CHANGELOG:
+-------------=
+v(large_release).(small_fix)
+-------------=
+v.2.0:
+    - Added enemies
+    - Added original Silversphere levels
+    - Changed water texture
+    - Changed background texture
+    - Changed shadow texture
+    - Added 2 additional levels
+    - Added BIRTHDAY!
+    BUGS:
+        - Border causes immense lag
+        - When ball pushes box into yellow ball, silver ball remains alive contrary to actual game
+        - X tiles are drawn above metal box tiles
+        - Ball shadow extends past game window
+        - A drowned box on the same tile as a drowned yellow ball doesn't have proper draw order
+
+v.1.0:
+    - Port game from codeskulptor
+    BUGS:
+        - Border causes immense lag
+
+/\/\/\/\/\/\/\/\
+PLANNED FEATURES:
+--------------=
+    - Add splash effects for boxes and balls falling in water
+    - Add player and enemy spawn flash animation
+    - Add surface shadows for metal boxes and regular boxes
+    - Add water shadows for metal boxes, boxes, and balls
+    - Add level editor
+
+===============
+Optimization suggestions
+- Optimize pre-detect for player to detect only a single direction
+
+- RELOCK LEVELS
+
+- "vortex" "box" "player" "xice" "xbox" "icecube" tags for respective sprites
+
