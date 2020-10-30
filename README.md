@@ -15,3 +15,7 @@ The project is complete!:
 Additional features in mind: 
 - Level Editor
 - Database for level uploading and sharing
+
+### Dependencies:
+- Python 3.0+
+- Pygame
