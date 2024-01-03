@@ -1,5 +1,6 @@
 import pygame
 import math
+import pathlib
 pygame.init()
 
 #SCREEN_SIZE = (1030, 700)
@@ -175,7 +176,7 @@ def get_arial(size):
 
 
 def get_sans(size):
-    return pygame.font.SysFont("Comic Sans", size)
+    return pygame.font.Font(pathlib.Path(__file__).parent.joinpath("assets/BebasNeue-Regular.ttf"), size)
 
 
 BIGBOI_FONT = pygame.font.SysFont("Comic Sans", int(0.045 * SCREEN_SIZE[0]))

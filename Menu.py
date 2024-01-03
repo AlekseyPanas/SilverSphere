@@ -55,8 +55,6 @@ class Menu:
         # Used to count when game is over or level is completed
         self.reset_counter = 0
 
-
-
     def load_levels(self):
         with open("level.json", "r") as file:
             self.levels = json.load(file)
