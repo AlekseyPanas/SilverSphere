@@ -66,5 +66,9 @@ class Button:
         if not self.button_state == "pressed":
             self.button_state = "hover" if pygame.Rect(self.top_left, self.size).collidepoint(pos) else "static"
 
+    def draw_and_hover(self, screen, pos):
+        self.draw(screen)
+        self.is_hover(pos)
+
     def is_clicked(self, pos):
         return pygame.Rect(self.top_left, self.size).collidepoint(pos)

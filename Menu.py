@@ -6,7 +6,7 @@ import Level
 from enum import IntEnum, Enum
 from dataclasses import dataclass
 from typing import Any, Optional
-from Managers import Manager, BirthdayManager, MenuScreenMainManager, MenuScreenLevelSelectManager
+from Managers import Manager, BirthdayManager, MenuScreenMainManager, MenuScreenLevelSelectManager, ASSET_LOADER
 import inspect
 
 
@@ -32,8 +32,9 @@ class Menu:
     def __init__(self):
         # Pygame window-related variables
         self.events = pygame.event.get()
-        self.running = False
+        self.__running = False
         self.screen = pygame.display.set_mode(Constants.SCREEN_SIZE, pygame.DOUBLEBUF)
+        ASSET_LOADER.load()  # Triggers delayed asset loading
 
         # Load levels from file
         self.levels = []
@@ -72,6 +73,7 @@ class Menu:
     def __update_manager(self):
         """Assumes manager index was updated to new one"""
         if self.__managers[self.menu_state.value] is None or (not self.__managers[self.menu_state.value].do_persist()):
+            print("Switched")
             # Generate a new instance with passed filtered dict of keyword params
             clss: type = STATE_TO_CLASS[self.menu_state]
             self.__managers[self.menu_state.value] = clss(self, **{k: self.__switch_params[k] for k in self.__switch_params if k in list(inspect.signature(clss).parameters.keys())})
@@ -81,20 +83,23 @@ class Menu:
         """Called when main loop finishes under any circumstances"""
         self.__save_game()
 
+    def stop_game(self):
+        self.__running = False
+
     def start_game(self):
-        self.running = True  # Set game to running
+        self.__running = True  # Set game to running
         clock = pygame.time.Clock()  # FPS clock
         last_fps_show = 0
         self.__update_manager()  # Set up first menu state
 
-        while self.running:
+        while self.__running:
             self.screen.fill((111, 80, 51))  # Clear screen
             self.events = pygame.event.get()  # Get events
 
             # Checks for window closure
             for event in self.events:
                 if event.type == pygame.QUIT:
-                    self.running = False
+                    self.__running = False
 
             # Run current manager and update the instance if the state changed
             old_state = self.menu_state

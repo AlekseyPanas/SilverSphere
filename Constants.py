@@ -106,24 +106,16 @@ MARBLE_IMAGE = PreAsset("assets/images/marble background.png", (1000, 600))
 WATER_SHADOW_IMAGE = PreAsset("assets/images/shadow 2.png", (100, 100))
 SCALED_WATER_SHADOW_IMAGE = PreAsset("assets/images/shadow 2.png", (100, 100))
 BALL_SHADOW_IMAGE = PreAsset("assets/images/ball shadow.png", (57, 30))
-MENU_FOREGROUND_IMAGE = PreAsset("assets/images/title screen.png", (1030, 700))
-MENU_SKY_IMAGE = PreAsset("assets/images/cloud.png", (1030, 700))
+
 EXIT_ICON_IMAGE = PreAsset("assets/images/X.png", (50, 50))
-
-LOCK_IMAGE = PreAsset("assets/images/lock_icon.png", (50, 50))
-
 EXPLOSION_IMAGE = PreAsset("assets/images/explosion.png", (800, 800))
 
 # Button Images
-PLAY_BUTTON_IMAGE = PreAsset("assets/images/title play.png")
 INLEVEL_PLAY_BUTTON_IMAGE = PreAsset("assets/images/play.png")
 NEXTLVL_BUTTON_IMAGE = PreAsset("assets/images/nxtlvl.png")
-LEVELS_BUTTON_IMAGE = PreAsset("assets/images/level select button.png")
 
 # Birthday images
-BDAY_BACKGROUND = PreAsset("assets/images/bdaybg.png", (1030, 700))
-BDAY_TEXT = PreAsset("assets/images/bdaytext.png", (995, 142))
-BDAY_BALLOON = PreAsset("assets/images/balloon.png", (83, 219))
+
 
 # FONTS
 def get_impact(size):
