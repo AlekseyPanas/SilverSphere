@@ -7,9 +7,45 @@ import Sprite
 import Constants
 import Button
 from abc import abstractmethod
+from dataclasses import dataclass
+
+
+class DelayedAssetLoader:
+    def __init__(self):
+        self.__classes = []
+
+    def register(self, obj_type: type):
+        """Append attributes for delayed loading"""
+        self.__classes.append(obj_type)
+
+    def load(self):
+        """Load the assets"""
+        for obj in self.__classes
+            for k in [k for k in obj.__dict__ if isinstance(obj.__dict__[k], PreAsset)]:  # Loop through PreAsset attributes
+                asset = obj.__dict__[k]
+                if asset.size is None:
+                    setattr(obj, k, pygame.image.load(asset.path).convert_alpha())
+                else:
+                    setattr(obj, k, pygame.transform.smoothscale(pygame.image.load(asset.path),
+                                                                 Constants.cscale(*asset.size)).convert_alpha())
+
+
+@dataclass
+class PreAsset:
+    path: str
+    size: tuple[int, int] = None
+
+
+def register_assets(obj: type, asset_loader: DelayedAssetLoader):
+    """Decorator for loading python image assets and converting them when defined as static
+    variables in a class. The class is registered with a delayed loader which can then be called
+    to inject the assets later"""
+
+
 
 
 class Manager:
+
     def __init__(self, menu: Menu, **kwargs): pass
 
     @abstractmethod
@@ -22,6 +58,7 @@ class Manager:
 
 class BirthdayManager(Manager):
     """Manager for Birthday Screen"""
+
     def __init__(self, menu: Menu):
         # Birthday screen stuff
         super().__init__(menu)
@@ -86,7 +123,10 @@ class MenuScreenManager(Manager):
     def do_persist(self) -> bool: return True
 
 
+@register_assets
 class MenuScreenMainManager(MenuScreenManager):
+    PLAY = PreAsset("./assets/menu_play_button.png")
+
     def __init__(self, menu: Menu):
         super().__init__(menu)
         # Instantiate Play button and other buttons
@@ -104,6 +144,8 @@ class MenuScreenMainManager(MenuScreenManager):
         # Draws score
         rendered_text = Constants.get_impact(Constants.cscale(35)).render("Score: " + str(menu.score), False, (0, 0, 0))
         screen.blit(rendered_text, rendered_text.get_rect(center=Constants.cscale(750, 250)))
+
+        screen.blit(screen, self.PLAY, (0, 0))
 
         # Menu Button events
         for event in menu.events:

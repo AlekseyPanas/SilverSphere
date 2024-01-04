@@ -11,6 +11,11 @@ SCREEN_SIZE = (1030, 700)
 #SCREEN_SIZE = (2060, 1400)
 
 
+@dataclass
+class PreAsset:
+    path: str
+    size: tuple[int, int] = None
+
 def distance(a, b):
     return math.sqrt((b[1] - a[1]) ** 2 + (b[0] - a[0]) ** 2)
 
@@ -64,10 +69,7 @@ def convert():
                                                         cscale(*globals()[g].size)).convert_alpha()
 
 
-@dataclass
-class PreAsset:
-    path: str
-    size: tuple[int, int] = None
+
 
 
 # Player Animation images
