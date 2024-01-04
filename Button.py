@@ -11,7 +11,7 @@ class Button:
         self.size = size
         self.image = None
         if image is not None:
-            self.image = pygame.transform.scale(image, (size[0], size[1] * state_quantity))
+            self.image = pygame.transform.smoothscale(image, (size[0], size[1] * state_quantity))
 
         # Image contains 2 states of the button. These 2 surfaces will hold each state.
         self.static = pygame.Surface(self.size, pygame.SRCALPHA, 32)

@@ -3,7 +3,6 @@ import Constants
 import Sprite
 import time
 import Button
-import Globe
 import copy
 
 # GROUND LAYOUT
@@ -352,6 +351,6 @@ class Level:
         if self.time_diff <= 0:
             self.player.set_drown()
             if not self.reset:
-                Globe.MENU.GAME.add_sprite(Sprite.Animation(-1, 5, {}, (9, 9), 1, Constants.EXPLOSION_IMAGE,
-                                           Constants.cscale(*self.player.pos), 74))
+                Globe.MENU.game.add_sprite(Sprite.Animation(-1, 5, {}, (9, 9), 1, Constants.EXPLOSION_IMAGE,
+                                                            Constants.cscale(*self.player.pos), 74))
             self.reset = True

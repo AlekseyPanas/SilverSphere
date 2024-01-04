@@ -1,6 +1,5 @@
 import pygame
 import Constants
-import Globe
 import copy
 
 
@@ -221,19 +220,19 @@ class Player(Object):
             allowed_movement[2] = False
 
         # Detects metal boxes
-        if allowed_movement[0] and Globe.MENU.GAME.ground_layout[int(self.coords[1])][int(self.coords[0]) + 1] == 'B':
+        if allowed_movement[0] and Globe.MENU.game.ground_layout[int(self.coords[1])][int(self.coords[0]) + 1] == 'B':
             allowed_movement[0] = False
-        if allowed_movement[1] and Globe.MENU.GAME.ground_layout[int(self.coords[1])][int(self.coords[0]) - 1] == 'B':
+        if allowed_movement[1] and Globe.MENU.game.ground_layout[int(self.coords[1])][int(self.coords[0]) - 1] == 'B':
             allowed_movement[1] = False
-        if allowed_movement[2] and Globe.MENU.GAME.ground_layout[int(self.coords[1]) - 1][int(self.coords[0])] == 'B':
+        if allowed_movement[2] and Globe.MENU.game.ground_layout[int(self.coords[1]) - 1][int(self.coords[0])] == 'B':
             allowed_movement[2] = False
-        if allowed_movement[3] and Globe.MENU.GAME.ground_layout[int(self.coords[1]) + 1][int(self.coords[0])] == 'B':
+        if allowed_movement[3] and Globe.MENU.game.ground_layout[int(self.coords[1]) + 1][int(self.coords[0])] == 'B':
             allowed_movement[3] = False
 
         # Detects boxes that aren't in the water
         # If the box is not able to be pushed in a certain direction
         # (box.detect() returns that info) then allowed movement is set to false for that direction
-        for box in Globe.MENU.GAME.boxes:
+        for box in Globe.MENU.game.boxes:
             if not box.state == 'drown':
                 box_detect = box.detect()
                 if allowed_movement[0] and box.coords == [self.coords[0] + 1, self.coords[1]]:
@@ -261,27 +260,27 @@ class Player(Object):
         self.state = 'drown'
 
         self.z_order = -3
-        Globe.MENU.GAME.sort_needed = True
+        Globe.MENU.game.sort_needed = True
 
     def post_detect(self):
         # detects if player is standing on water and sets state to drown as well as starts reset timer if on water
-        if Globe.MENU.GAME.ground_layout[int(self.coords[1])][int(self.coords[0])] == 'W':
-            Globe.MENU.GAME.reset = True
+        if Globe.MENU.game.ground_layout[int(self.coords[1])][int(self.coords[0])] == 'W':
+            Globe.MENU.game.reset = True
 
             self.set_drown()
 
         # Detects if on vortex
-        elif Globe.MENU.GAME.vortex.coords == self.coords and Globe.MENU.GAME.vortex.state == 'stationary':
+        elif Globe.MENU.game.vortex.coords == self.coords and Globe.MENU.game.vortex.state == 'stationary':
             # sets the vortex to close
-            Globe.MENU.GAME.vortex.set_image = False
-            Globe.MENU.GAME.vortex.state = 'close'
+            Globe.MENU.game.vortex.set_image = False
+            Globe.MENU.game.vortex.state = 'close'
             # State drown to make player disappear under the tiles
             self.state = 'drown'
             # starts timer to open post level menu
-            Globe.MENU.GAME.start_ending = True
+            Globe.MENU.game.start_ending = True
 
             self.z_order = -3
-            Globe.MENU.GAME.sort_needed = True
+            Globe.MENU.game.sort_needed = True
 
 
 class Vortex(Object):
@@ -339,11 +338,11 @@ class Vortex(Object):
                 self.time = 0
 
             # FIX THIS: Checks for boxes on open vortex and sets them to explode
-            for box in Globe.MENU.GAME.boxes:
+            for box in Globe.MENU.game.boxes:
                 if box.coords == self.coords:
                     box.kill = True
-                    Globe.MENU.GAME.add_sprite(Animation(-1, 12, {}, (9, 9), 1, Constants.EXPLOSION_IMAGE,
-                                               Constants.cscale(*box.pos), 74))
+                    Globe.MENU.game.add_sprite(Animation(-1, 12, {}, (9, 9), 1, Constants.EXPLOSION_IMAGE,
+                                                         Constants.cscale(*box.pos), 74))
 
         else:
             self.current_image = None
@@ -409,17 +408,17 @@ class Box(Object):
             allowed_movement[2] = False
 
         # Detects metal boxes
-        if allowed_movement[0] and Globe.MENU.GAME.ground_layout[int(self.coords[1])][int(self.coords[0]) + 1] == 'B':
+        if allowed_movement[0] and Globe.MENU.game.ground_layout[int(self.coords[1])][int(self.coords[0]) + 1] == 'B':
             allowed_movement[0] = False
-        if allowed_movement[1] and Globe.MENU.GAME.ground_layout[int(self.coords[1])][int(self.coords[0]) - 1] == 'B':
+        if allowed_movement[1] and Globe.MENU.game.ground_layout[int(self.coords[1])][int(self.coords[0]) - 1] == 'B':
             allowed_movement[1] = False
-        if allowed_movement[2] and Globe.MENU.GAME.ground_layout[int(self.coords[1]) - 1][int(self.coords[0])] == 'B':
+        if allowed_movement[2] and Globe.MENU.game.ground_layout[int(self.coords[1]) - 1][int(self.coords[0])] == 'B':
             allowed_movement[2] = False
-        if allowed_movement[3] and Globe.MENU.GAME.ground_layout[int(self.coords[1]) + 1][int(self.coords[0])] == 'B':
+        if allowed_movement[3] and Globe.MENU.game.ground_layout[int(self.coords[1]) + 1][int(self.coords[0])] == 'B':
             allowed_movement[3] = False
 
         # Detects other boxes
-        for box in Globe.MENU.GAME.boxes:
+        for box in Globe.MENU.game.boxes:
             if not box.state == 'drown':
                 if allowed_movement[0] and box.coords == [self.coords[0] + 1, self.coords[1]]:
                     allowed_movement[0] = False
@@ -431,14 +430,14 @@ class Box(Object):
                     allowed_movement[3] = False
 
         # Detects Vortex in all 4 directions
-        if Globe.MENU.GAME.vortex.state == 'stationary':
-            if allowed_movement[0] and Globe.MENU.GAME.vortex.coords == [self.coords[0] + 1, self.coords[1]]:
+        if Globe.MENU.game.vortex.state == 'stationary':
+            if allowed_movement[0] and Globe.MENU.game.vortex.coords == [self.coords[0] + 1, self.coords[1]]:
                 allowed_movement[0] = False
-            if allowed_movement[1] and Globe.MENU.GAME.vortex.coords == [self.coords[0] - 1, self.coords[1]]:
+            if allowed_movement[1] and Globe.MENU.game.vortex.coords == [self.coords[0] - 1, self.coords[1]]:
                 allowed_movement[1] = False
-            if allowed_movement[2] and Globe.MENU.GAME.vortex.coords == [self.coords[0], self.coords[1] - 1]:
+            if allowed_movement[2] and Globe.MENU.game.vortex.coords == [self.coords[0], self.coords[1] - 1]:
                 allowed_movement[2] = False
-            if allowed_movement[3] and Globe.MENU.GAME.vortex.coords == [self.coords[0], self.coords[1] + 1]:
+            if allowed_movement[3] and Globe.MENU.game.vortex.coords == [self.coords[0], self.coords[1] + 1]:
                 allowed_movement[3] = False
 
         # Returns an array which says whether or not movement in a certain direction is allowed
@@ -449,21 +448,21 @@ class Box(Object):
         self.state = 'drown'
 
         self.z_order = -4
-        Globe.MENU.GAME.sort_needed = True
+        Globe.MENU.game.sort_needed = True
 
     def post_detect(self):
         # detects if on water, and if so, makes the box's state 'drown' and sets the map tile to 'S' so the player can
         # move on it like a normal tile and not drown
-        if Globe.MENU.GAME.ground_layout[int(self.coords[1])][int(self.coords[0])] == 'W':
+        if Globe.MENU.game.ground_layout[int(self.coords[1])][int(self.coords[0])] == 'W':
             self.set_drown()
-            Globe.MENU.GAME.ground_layout[int(self.coords[1])][int(self.coords[0])] = 'S'
-            Globe.MENU.GAME.shadows.image.blit(Constants.SCALED_WATER_SHADOW_IMAGE, Constants.cscale(self.coords[0] * 50,
-                                                                                              self.coords[1] * 50))
+            Globe.MENU.game.ground_layout[int(self.coords[1])][int(self.coords[0])] = 'S'
+            Globe.MENU.game.shadows.image.blit(Constants.SCALED_WATER_SHADOW_IMAGE, Constants.cscale(self.coords[0] * 50,
+                                                                                                     self.coords[1] * 50))
 
     def move(self):
         # If any directional state is the current state, then run the code
         if self.state == "r" or self.state == "l" or self.state == "u" or self.state == "d":
-            speed = Globe.MENU.GAME.player.speed
+            speed = Globe.MENU.game.player.speed
             diff = 50 - self.move_count
             # Moves box continuously in direction corresponding to the state
             if self.state == "r":
@@ -512,7 +511,7 @@ class IceCube(Box):
     def move(self):
         # If any directional state is the current state, then run the code
         if self.state == "r" or self.state == "l" or self.state == "u" or self.state == "d":
-            speed = Globe.MENU.GAME.player.speed
+            speed = Globe.MENU.game.player.speed
             diff = 50 - self.move_count
             # Moves box continuously in direction corresponding to the state
             if self.state == "r":
@@ -619,7 +618,7 @@ class Enemy(Object):
         self.dir = 'drown'
 
         self.z_order = -3
-        Globe.MENU.GAME.sort_needed = True
+        Globe.MENU.game.sort_needed = True
 
     def run_sprite(self, screen, update_lock):
         if not update_lock:
@@ -632,8 +631,8 @@ class Enemy(Object):
             screen.blit(self.image, self.image.get_rect(center=Constants.cscale(*self.pos)))
 
     def collisions(self):
-        sprites = copy.copy(Globe.MENU.GAME.boxes)
-        sprites.append(Globe.MENU.GAME.player)
+        sprites = copy.copy(Globe.MENU.game.boxes)
+        sprites.append(Globe.MENU.game.player)
 
         explode_list = []
         explode = False
@@ -650,15 +649,15 @@ class Enemy(Object):
             for sprite in explode_list:
                 if "player" in sprite.tags:
                     sprite.set_drown()
-                    Globe.MENU.GAME.reset = True
+                    Globe.MENU.game.reset = True
                 else:
                     sprite.kill = True
                 self.kill = True
-                Globe.MENU.GAME.add_sprite(Animation(-1, 15, {}, (9, 9), 1, Constants.EXPLOSION_IMAGE,
+                Globe.MENU.game.add_sprite(Animation(-1, 15, {}, (9, 9), 1, Constants.EXPLOSION_IMAGE,
                                                      Constants.cscale(*sprite.pos), 74))
         if self.kill:
-            Globe.MENU.GAME.add_sprite(Animation(-1, 15, {}, (9, 9), 1, Constants.EXPLOSION_IMAGE,
-                                       Constants.cscale(*self.pos), 74))
+            Globe.MENU.game.add_sprite(Animation(-1, 15, {}, (9, 9), 1, Constants.EXPLOSION_IMAGE,
+                                                 Constants.cscale(*self.pos), 74))
 
     def move(self):
         if not self.dir == "drown":
@@ -705,7 +704,7 @@ class Enemy(Object):
 
                 self.coords = [(self.pos[0] - 40) / 50, (self.pos[1] - 40) / 50]
 
-                if Globe.MENU.GAME.ground_layout[int(self.coords[1])][int(self.coords[0])] == "W":
+                if Globe.MENU.game.ground_layout[int(self.coords[1])][int(self.coords[0])] == "W":
                     self.set_drown()
 
     def animate(self, screen, update_lock):
