@@ -1,20 +1,21 @@
 import pygame
 import math
 import pathlib
-from dataclasses import dataclass
+import sys
+import pathlib
 pygame.init()
 
-BIRTHDAY = False
 SCREEN_SIZE = (1030, 700)
 #SCREEN_SIZE = (515, 350)
 #SCREEN_SIZE = (824, 560)
 #SCREEN_SIZE = (2060, 1400)
 
+ASSET_PATH = pathlib.Path(sys.argv[0]).parent.joinpath("assets")
 
-@dataclass
-class PreAsset:
-    path: str
-    size: tuple[int, int] = None
+
+def path2asset(subpath: str):
+    return ASSET_PATH.joinpath(pathlib.Path(subpath))
+
 
 def distance(a, b):
     return math.sqrt((b[1] - a[1]) ** 2 + (b[0] - a[0]) ** 2)
@@ -58,63 +59,6 @@ def posscale(*coordinate, divisors=(1030, 700)):
         return tuple([coordinate[x] / divisors[x % 2] * SCREEN_SIZE[x] for x in range(len(coordinate))])
     else:
         return coordinate[0] / divisors[0] * SCREEN_SIZE[0]
-
-
-def convert():
-    for g in [k for k in globals() if isinstance(globals()[k], PreAsset)]:
-        if globals()[g].size is None:
-            globals()[g] = pygame.image.load(globals()[g].path).convert_alpha()
-        else:
-            globals()[g] = pygame.transform.smoothscale(pygame.image.load(globals()[g].path),
-                                                        cscale(*globals()[g].size)).convert_alpha()
-
-
-
-
-
-# Player Animation images
-PLAYER_IMAGE = PreAsset("assets/images/Silver Ball.png", (51, 51))
-PLAYER_UP_IMAGE = PreAsset("assets/images/Silver Up.png", (204, 51))
-PLAYER_DOWN_IMAGE = PreAsset("assets/images/Silver Ball Down.png", (204, 51))
-PLAYER_RIGHT_IMAGE = PreAsset("assets/images/Silver Right.png", (204, 51))
-PLAYER_LEFT_IMAGE = PreAsset("assets/images/Silver Left.png", (204, 51))
-
-ENEMY_IMAGE = PreAsset("assets/images/Golden Ball.png", (51, 51))
-ENEMY_UP_IMAGE = PreAsset("assets/images/Gold Up.png", (204, 51))
-ENEMY_DOWN_IMAGE = PreAsset("assets/images/Gold Down.png", (204, 51))
-ENEMY_RIGHT_IMAGE = PreAsset("assets/images/Gold Right.png", (204, 51))
-ENEMY_LEFT_IMAGE = PreAsset("assets/images/Gold Left.png", (204, 51))
-
-# Tile Images
-FLOOR_TILE_IMAGE = PreAsset("assets/images/floor.png", (50, 50))
-IRON_TILE_IMAGE = PreAsset("assets/images/iron.png", (50, 50))
-
-VORTEX_TILE_IMAGE = PreAsset("assets/images/vortex anim.png", (770, 70))
-VORTEX_OPEN_IMAGE = PreAsset("assets/images/vortex open.png", (630, 70))
-VORTEX_CLOSE_IMAGE = PreAsset("assets/images/vortex close.png", (630, 70))
-ICE_X_TILE_IMAGE = PreAsset("assets/images/Xice.png", (63, 63))
-BOX_X_TILE_IMAGE = PreAsset("assets/images/Xbox.png", (63, 63))
-
-# Box and Ice Entity Images
-BOX_IMAGE = PreAsset("assets/images/Wooden crate.png", (50, 50))
-ICE_IMAGE = PreAsset("assets/images/icecube.png", (50, 50))
-
-# Border Image
-BORDER_IMAGE = PreAsset("assets/images/border.png", (1030, 700))
-WATER_IMAGE = PreAsset("assets/images/water.png", (1000, 600))
-MARBLE_IMAGE = PreAsset("assets/images/marble background.png", (1000, 600))
-WATER_SHADOW_IMAGE = PreAsset("assets/images/shadow 2.png", (100, 100))
-SCALED_WATER_SHADOW_IMAGE = PreAsset("assets/images/shadow 2.png", (100, 100))
-BALL_SHADOW_IMAGE = PreAsset("assets/images/ball shadow.png", (57, 30))
-
-EXIT_ICON_IMAGE = PreAsset("assets/images/X.png", (50, 50))
-EXPLOSION_IMAGE = PreAsset("assets/images/explosion.png", (800, 800))
-
-# Button Images
-INLEVEL_PLAY_BUTTON_IMAGE = PreAsset("assets/images/play.png")
-NEXTLVL_BUTTON_IMAGE = PreAsset("assets/images/nxtlvl.png")
-
-# Birthday images
 
 
 # FONTS

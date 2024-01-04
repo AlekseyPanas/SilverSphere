@@ -1,9 +1,18 @@
 import pygame
 import Constants
-import Sprite
+from sprites import Sprite
 import time
 import Button
 import copy
+
+
+class LevelGraphicsGenerator:
+    def __init__(self, level_json: dict):
+        self.level_json = level_json
+
+    def make_static_tiles(self):
+        pass
+
 
 # GROUND LAYOUT
 # T = Normal Tile
@@ -14,16 +23,8 @@ tile_dictionary = {'T': Constants.FLOOR_TILE_IMAGE, 'B': Constants.IRON_TILE_IMA
 
 
 class Level:
-    def __init__(self, level_json):
-        # Ground layout is a list of lists containing a grid of strings to draw the background of a level including
-        # tiles like regular ground, and iron blocks
-        self.ground_layout = None
+    def __init__(self, level_json: dict):
 
-        self.SPRITES = []
-        self.delete_sprites = set([])
-
-        # Since you shouldn't add sprites during iteration, they are queued to be added at the end of the loop
-        self.sprite_queue = set([])
 
         '''
         # variables hold class instances for vortex tile, and any X tiles (xbox and xice are arrays of class instances
@@ -39,13 +40,23 @@ class Level:
         self.remove_boxes = set([])
         '''
 
-        # Popups for pre and post level
+        # Ground layout is a list of lists containing a grid of strings to draw the background of a level including
+        # tiles like regular ground, and iron blocks
+        self.ground_layout: list[list[str]] | None = None
+
+        self.SPRITES = []
+        self.delete_sprites = set([])
+
+        # Since you shouldn't add sprites during iteration, they are queued to be added at the end of the loop
+        self.sprite_queue = set([])
+
+        # Popups for pre- and post-level
         self.pre_level_popup_surf = None
         self.play_button = Button.Button(Constants.cscale(425, 440), Constants.cscale(180, 60),
-                                         Constants.INLEVEL_PLAY_BUTTON_IMAGE, state_quantity=2)
+                                         self.INLEVEL_PLAY_BUTTON_IMAGE, state_quantity=2)
         self.post_level_popup_surf = None
         self.next_level_button = Button.Button(Constants.cscale(55, 480), Constants.cscale(180, 60),
-                                               Constants.NEXTLVL_BUTTON_IMAGE, state_quantity=2)
+                                               self.NEXTLVL_BUTTON_IMAGE, state_quantity=2)
 
         # If true, game is paused
         self.update_lock = True
@@ -55,14 +66,14 @@ class Level:
         self.end_timer = 0
 
         # Name of the level
-        self.name = None
+        self.name: str | None = None
 
         # If all X's have been satisfied, opens exit
         self.open_exit = False
 
         # Exit Button
         self.exit_button = Button.Button(Constants.cscale(550, 640), Constants.cscale(50, 50),
-                                         Constants.EXIT_ICON_IMAGE, state_quantity=2)
+                                         self.EXIT_ICON_IMAGE, state_quantity=2)
 
         self.json = level_json
         self.load_level(level_json)
@@ -89,6 +100,13 @@ class Level:
         self.player = None
         self.vortex = None
         self.shadows = None
+
+
+
+
+
+
+
 
     def load_level(self, json):
         self.name = json["name"]
@@ -190,8 +208,7 @@ class Level:
         self.post_level_popup_surf = pygame.transform.smoothscale(self.post_level_popup_surf, Constants.cscale(250, 450))
 
     def run_level(self, screen):
-        # Draw Marble
-        screen.blit(Constants.MARBLE_IMAGE, Constants.cscale(15, 15))
+
 
         if not self.update_lock and not self.start_ending:
             self.update()

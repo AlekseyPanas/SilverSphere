@@ -1,12 +1,13 @@
-import Button
 import Constants
 import json
 import pygame
-import Level
-from enum import IntEnum, Enum
-from dataclasses import dataclass
-from typing import Any, Optional
-from Managers import Manager, BirthdayManager, MenuScreenMainManager, MenuScreenLevelSelectManager, ASSET_LOADER
+from enum import IntEnum
+from typing import Optional
+from managers.Managers import Manager, ASSET_LOADER
+from managers.BirthdayManager import BirthdayManager
+from managers.MenuScreenMainManager import MenuScreenMainManager
+from managers.MenuScreenLevelSelectManager import MenuScreenLevelSelectManager
+from managers.GameManager import GameManager
 import inspect
 
 
@@ -22,7 +23,7 @@ STATE_TO_CLASS = {MenuStates.MAIN: MenuScreenMainManager,
                   MenuStates.LEVELSEL: MenuScreenLevelSelectManager,
                   MenuStates.CUSTOMLEVELSEL: Manager,
                   MenuStates.BIRTHDAY: BirthdayManager,
-                  MenuStates.GAME: Manager}
+                  MenuStates.GAME: GameManager}
 
 
 class Menu:
@@ -61,12 +62,16 @@ class Menu:
         with open("level.json", "r") as file:
             self.levels = json.load(file)
 
+    def get_level_json_at_index(self, idx: int) -> dict:
+        return self.levels[idx]
+
     def __save_game(self):
         with open("data.json", "w") as file:
             completed = len([x for x in self.completed if x]) - 1
             json.dump({"highest": completed, "score": self.score}, file)
 
     def switch_state(self, new_state: MenuStates, param_dict=dict()):
+        """Used by manager classes to change screens"""
         self.menu_state = new_state
         self.__switch_params = param_dict
 
@@ -84,9 +89,11 @@ class Menu:
         self.__save_game()
 
     def stop_game(self):
+        """Set flag to stop game on next loop iteration"""
         self.__running = False
 
     def start_game(self):
+        """Start the main game loop and run it until game quits"""
         self.__running = True  # Set game to running
         clock = pygame.time.Clock()  # FPS clock
         last_fps_show = 0
@@ -117,7 +124,7 @@ class Menu:
                 last_fps_show = 0
 
             # fps max
-            clock.tick(45)
+            clock.tick(150)
 
         self.handle_exit()  # Safely terminate (i.e save game)
 
