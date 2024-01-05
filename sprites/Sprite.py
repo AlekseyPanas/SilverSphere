@@ -4,18 +4,24 @@ import Constants
 import copy
 import Menu
 from abc import abstractmethod
+from game.Renderers import RenderData
+from managers import GameManager
+from game import SpritesManager
+
+MARBLE_HEIGHT = 0.0
+UNDERWATER_HEIGHT = 1.0
+WATER_HEIGHT = 1.5
+GROUND_HEIGHT = 2.0
+METAL_HEIGHT = 3.0
 
 
-class Object:
-    def __init__(self, lifetime, z_order, tags):
-        self.lifetime = lifetime
+class Sprite:
+    def __init__(self, lifetime: int | None, z_order: float):
+        self.lifetime: int | None = lifetime
         self.kill = False
 
         # Draw order and height reference
-        self.z_order = z_order
-
-        # Set of string tags that can identify an object
-        self.tags = set(tags)
+        self.z_order: float = z_order
 
     @staticmethod
     def rotate(image, rect, angle):
@@ -29,24 +35,25 @@ class Object:
     @staticmethod
     def get_center_from_coords(coords):
         """Gets tile center from level grid coordinates (position not scaled to resolution)"""
-        return (coords[0] * 50) + 40, (coords[1] * 50) + 40
+        return (coords[0] * 50) + 25, (coords[1] * 50) + 25
 
     @abstractmethod
-    def update(self, menu: Menu):
-        """Update game data of this sprite object"""
-        pass
+    def update(self, menu: Menu, game_manager: GameManager.GameManager,
+               sprite_manager: SpritesManager.GroupSpritesManager):
+        """Update game data of this sprite object and add/remove any sprites via sprite_manager"""
 
     @abstractmethod
-    def render(self, menu: Menu, screen: pygame.Surface):
-        """Draw the object on game screen"""
+    def render(self, menu: Menu, game_manager: GameManager.GameManager,
+               sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData:
+        """Return object's render data"""
+
+    @abstractmethod
+    def get_shadow(self) -> pygame.Surface | None:
+        """Return None if this object casts no shadow. Otherwise, return a Surface
+        which represents the shadow this object would cast if it was directly on the
+        ground"""
 
 
-    # # Player Animation images
-    # PLAYER_IMAGE: pygame.Surface = PreAsset("assets/images/Silver Ball.png", (51, 51))
-    # PLAYER_UP_IMAGE: pygame.Surface = PreAsset("assets/images/Silver Up.png", (204, 51))
-    # PLAYER_DOWN_IMAGE: pygame.Surface = PreAsset("assets/images/Silver Ball Down.png", (204, 51))
-    # PLAYER_RIGHT_IMAGE: pygame.Surface = PreAsset("assets/images/Silver Right.png", (204, 51))
-    # PLAYER_LEFT_IMAGE: pygame.Surface = PreAsset("assets/images/Silver Left.png", (204, 51))
     #
     # # Enemy ball animations
     # ENEMY_IMAGE: pygame.Surface = PreAsset("assets/images/Golden Ball.png", (51, 51))
@@ -55,9 +62,7 @@ class Object:
     # ENEMY_RIGHT_IMAGE: pygame.Surface = PreAsset("assets/images/Gold Right.png", (204, 51))
     # ENEMY_LEFT_IMAGE: pygame.Surface = PreAsset("assets/images/Gold Left.png", (204, 51))
     #
-    # # Tile Images
-    # FLOOR_TILE_IMAGE: pygame.Surface = PreAsset("assets/images/floor.png", (50, 50))
-    # IRON_TILE_IMAGE: pygame.Surface = PreAsset("assets/images/iron.png", (50, 50))
+
     #
     # # Vortex animations
     # VORTEX_TILE_IMAGE: pygame.Surface = PreAsset("assets/images/vortex anim.png", (770, 70))
@@ -71,11 +76,9 @@ class Object:
     # BOX_X_TILE_IMAGE: pygame.Surface = PreAsset("assets/images/Xbox.png", (63, 63))
     #
     # BORDER_IMAGE: pygame.Surface = PreAsset("assets/images/border.png", (1030, 700))  # Level Border Image
-    # WATER_IMAGE: pygame.Surface = PreAsset("assets/images/water.png", (1000, 600))  # Translucent blue water overlay
-    # MARBLE_IMAGE: pygame.Surface = PreAsset("assets/images/marble background.png", (1000, 600))  # Underwater floor background
+
     # WATER_SHADOW_IMAGE: pygame.Surface = PreAsset("assets/images/shadow 2.png", (100, 100))  # tile shadow
-    # BALL_SHADOW_IMAGE: pygame.Surface = PreAsset("assets/images/ball shadow.png", (57, 30))  # Ball shadow
-    # EXIT_ICON_IMAGE: pygame.Surface = PreAsset("assets/images/X.png", (50, 50))  # [X] icon for exiting level
+
     # EXPLOSION_IMAGE: pygame.Surface = PreAsset("assets/images/explosion.png", (800, 800))  # Explosion animation
     #
     # # In-level buttons
@@ -93,245 +96,6 @@ class Object:
 #         screen.blit(self.image, Constants.cscale(*self.pos))
 #
 #
-# class Player(Object):
-#     def __init__(self, lifetime, z_order, tags, coords):
-#         super().__init__(lifetime, z_order, tags)
-#
-#         # position and grid coords
-#         self.coords = coords
-#         self.pos = list(Object.get_center_from_coords(self.coords))
-#
-#         # Key press stack for controlling ball
-#         self.STACK = Constants.Stack()
-#
-#         # Images for stationary and movement animations
-#         self.image = Constants.PLAYER_IMAGE
-#         self.img_l = [pygame.Surface(Constants.cscale(51, 51), pygame.SRCALPHA, 32) for x in range(4)]
-#         self.img_r = [pygame.Surface(Constants.cscale(51, 51), pygame.SRCALPHA, 32) for x in range(4)]
-#         self.img_u = [pygame.Surface(Constants.cscale(51, 51), pygame.SRCALPHA, 32) for x in range(4)]
-#         self.img_d = [pygame.Surface(Constants.cscale(51, 51), pygame.SRCALPHA, 32) for x in range(4)]
-#
-#         # Blits each frame onto the respective surface of the list of animation surfaces
-#         [self.img_l[i].blit(Constants.PLAYER_LEFT_IMAGE, (-i * Constants.cscale(51), 0)) for i in range(len(self.img_l))]
-#         [self.img_r[i].blit(Constants.PLAYER_RIGHT_IMAGE, (-i * Constants.cscale(51), 0)) for i in range(len(self.img_r))]
-#         [self.img_u[i].blit(Constants.PLAYER_UP_IMAGE, (-i * Constants.cscale(51), 0)) for i in range(len(self.img_u))]
-#         [self.img_d[i].blit(Constants.PLAYER_DOWN_IMAGE, (-i * Constants.cscale(51), 0)) for i in range(len(self.img_d))]
-#
-#         # Image and Animation info
-#         self.time = 0
-#         # When moving, changes current image to the animation image for the corresponding direction of movement
-#         self.current_image = self.image
-#
-#         # state
-#         self.state = "static"
-#         # list holding info on whether or not there are boxes in either of the 4 directions of the cube
-#         self.near_boxes = [None for x in range(4)]
-#
-#         # used to track movement
-#         self.move_count = 0
-#         self.speed = 6
-#
-#         # Run-Once variable for setting box state
-#         self.set_box_state = False
-#
-#     def run_sprite(self, screen, update_lock):
-#         if not update_lock:
-#             self.update()
-#         self.draw(screen, update_lock)
-#
-#     def draw(self, screen, update_lock):
-#         # Draws Ball Shadow
-#         screen.blit(Constants.BALL_SHADOW_IMAGE,
-#                     Constants.BALL_SHADOW_IMAGE.get_rect(center=Constants.cscale(self.pos[0] + 10, self.pos[1] + 22)))
-#
-#         # Draws ball
-#         # When stationary
-#         if self.state == "static" or self.state == 'drown':
-#             screen.blit(self.image, self.image.get_rect(center=Constants.cscale(*self.pos)))
-#         # moving animation
-#         if self.state == "r" or self.state == "l" or self.state == "u" or self.state == "d":
-#             self.animate(screen, update_lock)
-#
-#     def animate(self, screen, update_lock):
-#         current_index = int((self.time % 24) // 6)
-#         screen.blit(self.current_image[current_index], self.image.get_rect(center=Constants.cscale(*self.pos)))
-#         if not update_lock:
-#             self.time += 0.95
-#
-#     def event_handler(self):
-#         for event in Globe.events:
-#             if event.type == pygame.KEYDOWN:
-#                 if event.key == pygame.K_RIGHT:
-#                     self.STACK.push("r")
-#                 elif event.key == pygame.K_LEFT:
-#                     self.STACK.push("l")
-#                 elif event.key == pygame.K_DOWN:
-#                     self.STACK.push("d")
-#                 elif event.key == pygame.K_UP:
-#                     self.STACK.push("u")
-#             if event.type == pygame.KEYUP:
-#                 if event.key == pygame.K_RIGHT:
-#                     self.STACK.yank("r")
-#                 elif event.key == pygame.K_LEFT:
-#                     self.STACK.yank("l")
-#                 elif event.key == pygame.K_DOWN:
-#                     self.STACK.yank("d")
-#                 elif event.key == pygame.K_UP:
-#                     self.STACK.yank("u")
-#
-#     def update(self):
-#         # Calls event handler
-#         self.event_handler()
-#
-#         # Update coordinate location on game grid
-#         self.coords = ((self.pos[0] - 40) / 50, (self.pos[1] - 40) / 50)
-#         # if not moving, detects button presses. When button pressed down, set animation image and set corresponding
-#         # state. Calls pre-detect to see if you are allowed to move in a certain direction (nothing blocking like iron
-#         # boxes or the map border... etc)
-#         if self.state == "static":
-#             detect = self.pre_detect()
-#             if self.STACK.peek() == 'r' and detect[0]:
-#                 self.state = "r"
-#                 self.current_image = self.img_r
-#             elif self.STACK.peek() == 'l' and detect[1]:
-#                 self.state = "l"
-#                 self.current_image = self.img_l
-#             elif self.STACK.peek() == 'u' and detect[2]:
-#                 self.state = "u"
-#                 self.current_image = self.img_u
-#             elif self.STACK.peek() == 'd' and detect[3]:
-#                 self.state = "d"
-#                 self.current_image = self.img_d
-#         # Moving function called continuously
-#         self.move()
-#
-#     def move(self):
-#         # If any directional state is the current state, then run the code
-#         if self.state == "r" or self.state == "l" or self.state == "u" or self.state == "d":
-#             diff = 50 - self.move_count
-#             # Moves ball continuously in direction corresponding to the state
-#             # If there is a box in the direction you are moving, set the state of the box to move in the corresponding
-#             # direction. The set_box_state is a
-#             # run once variable to make the state be set only once until you move again.
-#             if self.state == "r":
-#                 if not self.set_box_state and not self.near_boxes[0] is None:
-#                     self.set_box_state = True
-#                     self.near_boxes[0].state = 'r'
-#                 if diff < self.speed:
-#                     self.pos[0] = round(self.pos[0] + diff)
-#                 else:
-#                     self.pos[0] += self.speed
-#             elif self.state == "l":
-#                 if not self.set_box_state and not self.near_boxes[1] is None:
-#                     self.set_box_state = True
-#                     self.near_boxes[1].state = 'l'
-#                 if diff < self.speed:
-#                     self.pos[0] = round(self.pos[0] - diff)
-#                 else:
-#                     self.pos[0] -= self.speed
-#             elif self.state == "u":
-#                 if not self.set_box_state and not self.near_boxes[2] is None:
-#                     self.set_box_state = True
-#                     self.near_boxes[2].state = 'u'
-#                 if diff < self.speed:
-#                     self.pos[1] = round(self.pos[1] - diff)
-#                 else:
-#                     self.pos[1] -= self.speed
-#             elif self.state == "d":
-#                 if not self.set_box_state and not self.near_boxes[3] is None:
-#                     self.set_box_state = True
-#                     self.near_boxes[3].state = 'd'
-#                 if diff < self.speed:
-#                     self.pos[1] = round(self.pos[1] + diff)
-#                 else:
-#                     self.pos[1] += self.speed
-#             # Increment count
-#             self.move_count += self.speed
-#             # Detects when the ball has moved a single tile and then sets state to Stationary. Also resets count
-#             if self.move_count >= 50:
-#                 self.state = "static"
-#                 self.move_count = 0
-#                 # Updates Coords and runs post-detect
-#                 self.coords = [(self.pos[0] - 40) / 50, (self.pos[1] - 40) / 50]
-#                 self.post_detect()
-#
-#     def pre_detect(self):
-#         # right, left, up, down
-#         allowed_movement = [True for x in range(4)]
-#         self.near_boxes = [None for x in range(4)]
-#         self.set_box_state = False
-#         # Detects if the end of the map is in any direction of the player
-#         if self.coords[0] == 19:
-#             allowed_movement[0] = False
-#         elif self.coords[0] == 0:
-#             allowed_movement[1] = False
-#         if self.coords[1] == 11:
-#             allowed_movement[3] = False
-#         elif self.coords[1] == 0:
-#             allowed_movement[2] = False
-#
-#         # Detects metal boxes
-#         if allowed_movement[0] and Globe.MENU.game.ground_layout[int(self.coords[1])][int(self.coords[0]) + 1] == 'B':
-#             allowed_movement[0] = False
-#         if allowed_movement[1] and Globe.MENU.game.ground_layout[int(self.coords[1])][int(self.coords[0]) - 1] == 'B':
-#             allowed_movement[1] = False
-#         if allowed_movement[2] and Globe.MENU.game.ground_layout[int(self.coords[1]) - 1][int(self.coords[0])] == 'B':
-#             allowed_movement[2] = False
-#         if allowed_movement[3] and Globe.MENU.game.ground_layout[int(self.coords[1]) + 1][int(self.coords[0])] == 'B':
-#             allowed_movement[3] = False
-#
-#         # Detects boxes that aren't in the water
-#         # If the box is not able to be pushed in a certain direction
-#         # (box.detect() returns that info) then allowed movement is set to false for that direction
-#         for box in Globe.MENU.game.boxes:
-#             if not box.state == 'drown':
-#                 box_detect = box.detect()
-#                 if allowed_movement[0] and box.coords == [self.coords[0] + 1, self.coords[1]]:
-#                     self.near_boxes[0] = box
-#                     if not box_detect[0]:
-#                         allowed_movement[0] = False
-#                 if allowed_movement[1] and box.coords == [self.coords[0] - 1, self.coords[1]]:
-#                     self.near_boxes[1] = box
-#                     if not box_detect[1]:
-#                         allowed_movement[1] = False
-#                 if allowed_movement[2] and box.coords == [self.coords[0], self.coords[1] - 1]:
-#                     self.near_boxes[2] = box
-#                     if not box_detect[2]:
-#                         allowed_movement[2] = False
-#                 if allowed_movement[3] and box.coords == [self.coords[0], self.coords[1] + 1]:
-#                     self.near_boxes[3] = box
-#                     if not box_detect[3]:
-#                         allowed_movement[3] = False
-#
-#         # Returns an array which says whether or not movement in a certain direction is allowed
-#         # [Right,Left,Up,Down]
-#         return allowed_movement
-#
-#     def set_drown(self):
-#         self.state = 'drown'
-#
-#         self.z_order = -3
-#         Globe.MENU.game.sort_needed = True
-#
-#     def post_detect(self):
-#         # detects if player is standing on water and sets state to drown as well as starts reset timer if on water
-#         if Globe.MENU.game.ground_layout[int(self.coords[1])][int(self.coords[0])] == 'W':
-#             Globe.MENU.game.reset = True
-#
-#             self.set_drown()
-#
-#         # Detects if on vortex
-#         elif Globe.MENU.game.vortex.coords == self.coords and Globe.MENU.game.vortex.state == 'stationary':
-#             # sets the vortex to close
-#             Globe.MENU.game.vortex.set_image = False
-#             Globe.MENU.game.vortex.state = 'close'
-#             # State drown to make player disappear under the tiles
-#             self.state = 'drown'
-#             # starts timer to open post level menu
-#             Globe.MENU.game.start_ending = True
-#
-#             self.z_order = -3
-#             Globe.MENU.game.sort_needed = True
 #
 #
 # class Vortex(Object):

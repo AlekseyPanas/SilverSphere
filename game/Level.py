@@ -1,17 +1,12 @@
 import pygame
 import Constants
-from sprites import Sprite
+from sprites.Sprite import Sprite
 import time
 import Button
 import copy
 
 
-class LevelGraphicsGenerator:
-    def __init__(self, level_json: dict):
-        self.level_json = level_json
 
-    def make_static_tiles(self):
-        pass
 
 
 # GROUND LAYOUT
@@ -19,7 +14,7 @@ class LevelGraphicsGenerator:
 # W = Blank Spot
 # B = Iron block
 
-tile_dictionary = {'T': Constants.FLOOR_TILE_IMAGE, 'B': Constants.IRON_TILE_IMAGE, 'W': None, 'S': None}
+
 
 
 class Level:
@@ -71,10 +66,6 @@ class Level:
         # If all X's have been satisfied, opens exit
         self.open_exit = False
 
-        # Exit Button
-        self.exit_button = Button.Button(Constants.cscale(550, 640), Constants.cscale(50, 50),
-                                         self.EXIT_ICON_IMAGE, state_quantity=2)
-
         self.json = level_json
         self.load_level(level_json)
 
@@ -111,8 +102,7 @@ class Level:
     def load_level(self, json):
         self.name = json["name"]
         self.ground_layout = json["layout"]
-        # Adds player ball to sprites list
-        self.add_sprite(Sprite.Player(None, 9, {"player"}, json["player_start"]))
+
         # Adds vortex to sprites list
         self.add_sprite(Sprite.Vortex(None, 8, {"vortex"}, json["vortex_pos"]))
         # Adds boxes
@@ -129,20 +119,9 @@ class Level:
         # Adds enemies
         for enemy in json["enemies"]:
             self.add_sprite(Sprite.Enemy(None, 9, "enemy", enemy["start_pos"], enemy["path_dir"], enemy["path_dist"]))
-        # Adds image of ground layout to sprites
-        ground_layout_surf = pygame.Surface((1000, 600), pygame.SRCALPHA, 32)
 
-        # Draws the ground_layout
-        grid_position = [0, 0]
-        for row in self.ground_layout:
-            for tile in row:
-                if tile_dictionary[tile] is not None:
-                    ground_layout_surf.blit(tile_dictionary[tile], grid_position)
-                grid_position[0] += 50
-            grid_position[1] += 50
-            grid_position[0] = 0
 
-        ground_layout_surf = pygame.transform.smoothscale(ground_layout_surf, Constants.cscale(1000, 600))
+
         self.add_sprite(Sprite.StaticImage(None, -1, {}, ground_layout_surf, (15, 15)))
 
         # Adds water
@@ -218,17 +197,7 @@ class Level:
         # Draws HotBar Items and Border
         #screen.blit(Constants.BORDER_IMAGE, (0, 0))
 
-        pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(*Constants.cscale(100, 640, 200, 58)), Constants.cscale(5))
-        pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(*Constants.cscale(300, 640, 200, 58)), Constants.cscale(5))
 
-        rendered_text = Constants.get_sans(Constants.cscale(50, divisors=(1030,))).render('TIME: ' + str(self.time_diff), True, (0, 0, 0))
-        screen.blit(rendered_text, rendered_text.get_rect(center=Constants.cscale(200, 669)))
-
-        rendered_text = Constants.get_sans(Constants.cscale(50, divisors=(1030,))).render('LEVEL: ' + str(self.json["id"]), True, (0, 0, 0))
-        screen.blit(rendered_text, rendered_text.get_rect(center=Constants.cscale(400, 669)))
-
-        self.exit_button.draw(screen)
-        self.exit_button.is_hover(pygame.mouse.get_pos())
 
         # Manage prelevel menu
         if not self.start_level:

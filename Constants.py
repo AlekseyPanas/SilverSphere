@@ -61,6 +61,50 @@ def posscale(*coordinate, divisors=(1030, 700)):
         return coordinate[0] / divisors[0] * SCREEN_SIZE[0]
 
 
+def spritesheet2frames(spritesheet: pygame.Surface, frame_dims_xy: tuple[int, int],
+                       intermediates=0) -> list[pygame.Surface]:
+    """
+    Return sequence of frame surfaces from an animation spritesheet. The spritesheet is assumed
+    to organize frames left to right top to bottom (i.e. one row finishes, the next frame is found
+    at the beginning of the next row)
+    :param spritesheet: surface representing the spritesheet
+    :param frame_dims_xy: Number of frame columns and rows
+    :param intermediates: Number of frames to add between each frame where the frames are alpha blended
+    :return:
+    """
+    frames: list[pygame.Surface] = []
+    final_frames: list[pygame.Surface] = []
+
+    frame_size = (spritesheet.get_size()[0] // frame_dims_xy[0],
+                  spritesheet.get_size()[1] // frame_dims_xy[1])
+
+    # Extract frames
+    for row in range(frame_dims_xy[1]):
+        for col in range(frame_dims_xy[0]):
+            frame = pygame.Surface(frame_size, pygame.SRCALPHA, depth=32).convert_alpha()
+            frame.blit(spritesheet, (-col * frame_size[0], -row * frame_size[1]))
+            frames.append(frame.convert_alpha())
+
+    # Compute intermediates
+    alpha_increment = 255 / (intermediates + 1)
+    for f in range(len(frames) - 1):
+        final_frames.append(frames[f])
+        for i in range(1, intermediates + 1):
+            cur_alpha = alpha_increment * i
+
+            frame = pygame.Surface(frame_size, pygame.SRCALPHA, depth=32).convert_alpha()
+            f_prev = frames[f].copy()
+            f_next = frames[f+1].copy()
+            f_next.fill((0, 0, 0, 255 - cur_alpha), special_flags=pygame.BLEND_RGBA_SUB)
+
+            frame.blit(f_prev, (0, 0))
+            frame.blit(f_next, (0, 0))
+            final_frames.append(frame.convert_alpha())
+    final_frames.append(frames[-1])
+
+    return final_frames
+
+
 # FONTS
 def get_impact(size):
     return pygame.font.SysFont("Impact", size)
@@ -75,5 +119,3 @@ def get_sans(size):
 
 
 BIGBOI_FONT = pygame.font.SysFont("Comic Sans", int(0.045 * SCREEN_SIZE[0]))
-
-#SCREEN_UPDATE_RECT = cscale(15, 15, 1000, 685)

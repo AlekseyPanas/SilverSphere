@@ -1,6 +1,9 @@
 import timeit
 import math
 import heapq
+import pygame
+from contextlib import contextmanager
+import Constants
 
 
 def time_seq_loops():
@@ -46,5 +49,83 @@ def heaptest():
     print(heapq.heappop(x))
 
 
+@contextmanager
+def drawer():
+    screen = pygame.display.set_mode((500, 500), pygame.DOUBLEBUF)
+    screen.fill((255, 255, 255))
+
+    yield screen
+
+    pygame.display.update()
+    pygame.event.set_blocked(None)
+    pygame.event.set_allowed(pygame.QUIT)
+    pygame.event.clear()
+    pygame.event.wait()
+
+
+def mask_test():
+    with drawer() as screen:
+        shad = pygame.image.load("./assets/images/ball shadow.png").convert_alpha()
+        ball = pygame.image.load("./assets/images/balloon.png").convert_alpha()
+
+        sqr = pygame.Surface((100, 100)).convert_alpha()
+        sqr.fill((0, 255, 0))
+
+        m = pygame.mask.from_surface(ball)
+        print(m)
+        m.to_surface(sqr, dest=(20, 20))
+
+        screen.blit(shad, (0, 0), special_flags=pygame.BLEND_ALPHA_SDL2)
+        screen.blit(ball, (0, 0), special_flags=pygame.BLEND_ALPHA_SDL2)
+        screen.blit(sqr, (300, 300))
+
+
+def opacity_test():
+    with drawer() as screen:
+        sqr = pygame.Surface((100, 100)).convert_alpha()
+        sqr.fill((0, 255, 0))
+        sqr2 = pygame.Surface((100, 100)).convert_alpha()
+        sqr2.fill((0, 255, 0))
+        sqr.fill((0, 0, 0, 255), special_flags=pygame.BLEND_RGBA_SUB)
+        screen.blit(sqr, (300, 300))
+        screen.blit(sqr2, (100, 100))
+
+
+def test_spritesheet_parser():
+    screen = pygame.display.set_mode((500, 500))
+    sheet = pygame.image.load("./assets/images/explosion.png").convert_alpha()
+    frames = Constants.spritesheet2frames(sheet, (9, 9), 10)
+
+    running = True
+    i = 0
+
+    while running:
+        screen.fill((255, 255, 255))
+
+        screen.blit(frames[(i // 5) % len(frames)], (100, 100))
+
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                running = False
+
+        pygame.display.update()
+        i += 1
+
+
+class A:
+    def __init__(self):
+        pass
+
+
+class B(A):
+    def __init__(self):
+        super().__init__()
+
+
+def inheritance_test():
+    print(isinstance(B(), A))
+    print(B == A)
+
+
 if __name__ == "__main__":
-    heaptest()
+    inheritance_test()

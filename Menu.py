@@ -46,9 +46,10 @@ class Menu:
         self.completed = [False] * len(self.levels)
         self.__load_player_data()
 
-        self.menu_state: MenuStates = MenuStates.MAIN  # What state is the menu in
+        self.menu_state: MenuStates = MenuStates.GAME  # What state is the menu in
         self.__managers: list[Optional[Manager]] = [None] * len(MenuStates)  # Instances of menu state managers
         self.__switch_params: dict = dict()  # A tuple of parameters
+        self.__is_switched = False  # Indicates that state has been changed
 
     def __load_player_data(self):
         with open("data.json", "r") as file:
@@ -74,11 +75,12 @@ class Menu:
         """Used by manager classes to change screens"""
         self.menu_state = new_state
         self.__switch_params = param_dict
+        self.__is_switched = True
 
     def __update_manager(self):
         """Assumes manager index was updated to new one"""
+        self.__is_switched = False
         if self.__managers[self.menu_state.value] is None or (not self.__managers[self.menu_state.value].do_persist()):
-            print("Switched")
             # Generate a new instance with passed filtered dict of keyword params
             clss: type = STATE_TO_CLASS[self.menu_state]
             self.__managers[self.menu_state.value] = clss(self, **{k: self.__switch_params[k] for k in self.__switch_params if k in list(inspect.signature(clss).parameters.keys())})
@@ -109,9 +111,8 @@ class Menu:
                     self.__running = False
 
             # Run current manager and update the instance if the state changed
-            old_state = self.menu_state
             self.__managers[self.menu_state.value].run(self.screen, self)
-            if old_state != self.menu_state:
+            if self.__is_switched:
                 self.__update_manager()
 
             pygame.display.update()  # Update display
