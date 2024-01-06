@@ -125,7 +125,7 @@ class Menu:
                 last_fps_show = 0
 
             # fps max
-            clock.tick(15)
+            clock.tick(45)
 
         self.handle_exit()  # Safely terminate (i.e save game)
 

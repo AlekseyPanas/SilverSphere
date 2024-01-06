@@ -1,5 +1,7 @@
+from __future__ import annotations
 from sprites.Sprite import Sprite
 from sprites.ShadowManager import ShadowManager
+from typing import Iterable
 
 
 class SpriteGroup:
@@ -75,16 +77,17 @@ class GroupSpritesManager:
             return self.__sprite_groups[t].get_sprites()
         return []
 
-    def get_groups(self, ts: list[type]) -> list[list[Sprite]]:
+    def get_groups(self, ts: list[type]) -> Iterable[Sprite]:
         """Get a list of sprites of any type in ts, excluding shadow managers"""
-        groups = []
         for t in ts:
-            groups.append(self.get_group(t))
-        return groups
+            for sprite in self.get_group(t):
+                yield sprite
 
-    def get_all_sprites(self) -> list[list[Sprite]]:
+    def get_all_sprites(self) -> Iterable[Sprite]:
         """Get all sprites excluding shadow managers"""
-        return [g.get_sprites() for g in self.__sprite_groups.values()]
+        for g in self.__sprite_groups.values():
+            for sprite in g.get_sprites():
+                yield sprite
 
     def get_shadow_managers(self) -> list[ShadowManager]:
         """Return shadow managers"""

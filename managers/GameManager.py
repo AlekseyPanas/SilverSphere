@@ -8,6 +8,9 @@ from game.Renderers import ZHeapRenderer
 from game.SpritesManager import GroupSpritesManager
 from game.LevelGenerator import LevelGenerator
 from Button import Button
+from sprites.Vortex import Vortex
+from sprites.X import X_Ice_Tile, X_Box_Tile
+from sprites.Box import Box, IceCube
 
 
 @register_assets(ASSET_LOADER)
@@ -25,7 +28,7 @@ class GameManager(Manager):
     GRID_PIXELS_Y = TILE_SIZE * GRID_SIZE_Y
     GRID_PIXELS = (GRID_PIXELS_X, GRID_PIXELS_Y)
 
-    def __init__(self, menu: Menu, level_idx: int = 23):
+    def __init__(self, menu: Menu, level_idx: int = 0):
         super().__init__(menu)
         self.__level_json = menu.get_level_json_at_index(level_idx)  # dictionary of level object (see levels.json)
         self.__layout = self.__level_json["layout"]
@@ -47,26 +50,27 @@ class GameManager(Manager):
         """Return level's string-based layout"""
         return self.__layout
 
-    def run(self, screen: pygame.Surface, menu: Menu):
+    def run(self, screen: pygame.Surface, menu: Menu.Menu):
         # Update all sprites
-        for g in self.__sprites_manager.get_all_sprites():
-            for s in g:
-                s.update(menu, self, self.__sprites_manager)
+        for s in self.__sprites_manager.get_all_sprites():
+            s.update(menu, self, self.__sprites_manager)
+
+        # Run level logic
+        self.run_level_logic(menu)
 
         self.__sprites_manager.flush_all()  # Flush manager. The sprites aren't added until flushed
 
         # Add content to frame and register shadows
-        for g in self.__sprites_manager.get_all_sprites():
-            for s in g:
-                render_output = s.render(menu, self, self.__sprites_manager)
-                if render_output is not None:
-                    self.__renderer.add_to_frame(render_output)  # Render sprite
+        for s in self.__sprites_manager.get_all_sprites():
+            render_output = s.render(menu, self, self.__sprites_manager)
+            if render_output is not None:
+                self.__renderer.add_to_frame(render_output)  # Render sprite
 
-                # Register shadows
-                shad = s.get_shadow()
-                if shad is not None:
-                    for shadman in self.__sprites_manager.get_shadow_managers():
-                        shadman.register_shadow(s)
+            # Register shadows
+            shad = s.get_shadow()
+            if shad is not None:
+                for shadman in self.__sprites_manager.get_shadow_managers():
+                    shadman.register_shadow(s)
 
         # Render shadows and add them
         for shadman in self.__sprites_manager.get_shadow_managers():
@@ -97,6 +101,52 @@ class GameManager(Manager):
         self.__exit_button.draw_and_hover(screen, pygame.mouse.get_pos())
 
     def do_persist(self) -> bool: return False
+
+    def run_level_logic(self, menu: Menu.Menu):
+        for event in menu.events:
+            if event.type == pygame.MOUSEBUTTONUP:
+                if self.__exit_button.is_clicked(event.pos):
+                    menu.switch_state(Menu.MenuStates.MAIN)
+
+        # Detects if all X marks are satisfied. open_exit initially set to false
+        self.open_exit = False
+        # temporary array to report the status of each x mark
+        x_satisfaction = True
+        # If there are no Xs, exit opens automatically
+        x_ice_tiles = self.__sprites_manager.get_group(X_Ice_Tile)
+        x_box_tiles = self.__sprites_manager.get_group(X_Box_Tile)
+        if not len(x_ice_tiles) and not len(x_box_tiles):
+            self.open_exit = True
+        else:
+            # Checks if any X's aren't satisfied
+            for x in x_ice_tiles:
+                satisfied = False
+                for box in self.__sprites_manager.get_group(IceCube):
+                    if box.coords == x.coords:
+                        satisfied = True
+                if not satisfied:
+                    x_satisfaction = False
+
+            for x in x_box_tiles:
+                satisfied = False
+                for box in self.__sprites_manager.get_groups([IceCube, Box]):
+                    if box.coords == x.coords:
+                        satisfied = True
+                if not satisfied:
+                    x_satisfaction = False
+
+            # If all Xs are satisfied, exit opens
+            if x_satisfaction:
+                self.open_exit = True
+
+        # controls animations with vortex
+        vortex: Vortex = self.__sprites_manager.get_single(Vortex)
+        if self.open_exit and vortex.state == 'blank':
+            vortex.set_image = False
+            vortex.state = 'open'
+        elif not self.open_exit and vortex.state == 'stationary':
+            vortex.set_image = False
+            vortex.state = 'close'
 
 # TODO: Game-menu code
 

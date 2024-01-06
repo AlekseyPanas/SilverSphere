@@ -65,18 +65,17 @@ class Box(Sprite):
             allowed_movement[3] = False
 
         # Detects other boxes
-        for g in sprite_manager.get_groups([Box, IceCube]):
-            for box in g:
-                box: Box
-                if not box.state == 'drown':
-                    if allowed_movement[0] and box.coords == [self.coords[0] + 1, self.coords[1]]:
-                        allowed_movement[0] = False
-                    if allowed_movement[1] and box.coords == [self.coords[0] - 1, self.coords[1]]:
-                        allowed_movement[1] = False
-                    if allowed_movement[2] and box.coords == [self.coords[0], self.coords[1] - 1]:
-                        allowed_movement[2] = False
-                    if allowed_movement[3] and box.coords == [self.coords[0], self.coords[1] + 1]:
-                        allowed_movement[3] = False
+        for box in sprite_manager.get_groups([Box, IceCube]):
+            box: Box
+            if not box.state == 'drown':
+                if allowed_movement[0] and box.coords == [self.coords[0] + 1, self.coords[1]]:
+                    allowed_movement[0] = False
+                if allowed_movement[1] and box.coords == [self.coords[0] - 1, self.coords[1]]:
+                    allowed_movement[1] = False
+                if allowed_movement[2] and box.coords == [self.coords[0], self.coords[1] - 1]:
+                    allowed_movement[2] = False
+                if allowed_movement[3] and box.coords == [self.coords[0], self.coords[1] + 1]:
+                    allowed_movement[3] = False
 
         # Detects Vortex in all 4 directions
         vortex: Vortex = sprite_manager.get_single(Vortex)
@@ -98,12 +97,12 @@ class Box(Sprite):
         self.state = 'drown'
         self.z_order = ZHeights.UNDERWATER_OBJECT_HEIGHT
 
-    def post_detect(self):
+    def post_detect(self, game_manager: GameManager.GameManager, sprite_manager: SpritesManager.GroupSpritesManager):
         # detects if on water, and if so, makes the box's state 'drown' and sets the map tile to 'S' so the player can
         # move on it like a normal tile and not drown
-        if self.__game_manager.get_layout()[int(self.coords[1])][int(self.coords[0])] == 'W':
+        if game_manager.get_layout()[int(self.coords[1])][int(self.coords[0])] == 'W':
             self.set_drown()
-            self.__game_manager.get_layout()[int(self.coords[1])][int(self.coords[0])] = 'S'
+            game_manager.get_layout()[int(self.coords[1])][int(self.coords[0])] = 'S'
 
     def move(self, game_manager: GameManager.GameManager, sprite_manager: SpritesManager.GroupSpritesManager):
         # If any directional state is the current state, then run the code
@@ -138,8 +137,8 @@ class Box(Sprite):
                 self.state = "stationary"
                 self.move_count = 0
                 # Updates Coords and runs post-detect
-                self.coords = [(self.pos[0] - 40) / 50, (self.pos[1] - 40) / 50]
-                self.post_detect()
+                self.coords = [(self.pos[0] - 25) / 50, (self.pos[1] - 25) / 50]
+                self.post_detect(game_manager, sprite_manager)
 
 
 class IceCube(Box):
@@ -177,12 +176,12 @@ class IceCube(Box):
             self.move_count += speed
             # Detects when the ball has moved a single tile and then sets state to Stationary. Also resets count
             if self.move_count >= 50:
-                self.coords = [(self.pos[0] - 40) / 50, (self.pos[1] - 40) / 50]
+                self.coords = [(self.pos[0] - 25) / 50, (self.pos[1] - 25) / 50]
                 if not self.detect(game_manager, sprite_manager)[self.direction_dict[self.state]]:
                     self.state = "stationary"
                     self.move_count = 0
                     # runs post-detect
-                    self.post_detect()
+                    self.post_detect(game_manager, sprite_manager)
                 else:
                     self.move_count = 0
-                    self.post_detect()
+                    self.post_detect(game_manager, sprite_manager)

@@ -126,6 +126,15 @@ def spritesheet_parser():
         i += 1
 
 
+def generator_test():
+    def get():
+        for i in range(10):
+            yield i
+
+    for i in get():
+        print(i)
+
+
 class A:
     def __init__(self):
         pass
@@ -142,4 +151,4 @@ def inheritance_test():
 
 
 if __name__ == "__main__":
-    time_seq_loops()
+    generator_test()

@@ -71,7 +71,7 @@ class Player(Sprite):
         self.animate()  # Updates animation if in motion
 
         # Update coordinate location on game grid
-        self.coords = ((self.pos[0] - 40) / 50, (self.pos[1] - 40) / 50)
+        self.coords = ((self.pos[0] - 25) / 50, (self.pos[1] - 25) / 50)
 
         # if not moving, detects button presses. When button pressed down, set animation image and set corresponding
         # state. Calls pre-detect to see if you are allowed to move in a certain direction (nothing blocking like iron
@@ -181,7 +181,7 @@ class Player(Sprite):
                 self.state = "static"
                 self.move_count = 0
                 # Updates Coords and runs post-detect
-                self.coords = [(self.pos[0] - 40) / 50, (self.pos[1] - 40) / 50]
+                self.coords = [(self.pos[0] - 25) / 50, (self.pos[1] - 25) / 50]
                 self.post_detect(game_manager, sprite_manager)
 
     def pre_detect(self, game_manager: GameManager.GameManager, sprite_manager: SpritesManager.GroupSpritesManager):
@@ -212,26 +212,25 @@ class Player(Sprite):
         # Detects boxes that aren't in the water
         # If the box is not able to be pushed in a certain direction
         # (box.detect() returns that info) then allowed movement is set to false for that direction
-        for g in sprite_manager.get_groups([Box, IceCube]):
-            for box in g:
-                if not box.state == 'drown':
-                    box_detect = box.detect(game_manager, sprite_manager)
-                    if allowed_movement[0] and box.coords == [self.coords[0] + 1, self.coords[1]]:
-                        self.near_boxes[0] = box
-                        if not box_detect[0]:
-                            allowed_movement[0] = False
-                    if allowed_movement[1] and box.coords == [self.coords[0] - 1, self.coords[1]]:
-                        self.near_boxes[1] = box
-                        if not box_detect[1]:
-                            allowed_movement[1] = False
-                    if allowed_movement[2] and box.coords == [self.coords[0], self.coords[1] - 1]:
-                        self.near_boxes[2] = box
-                        if not box_detect[2]:
-                            allowed_movement[2] = False
-                    if allowed_movement[3] and box.coords == [self.coords[0], self.coords[1] + 1]:
-                        self.near_boxes[3] = box
-                        if not box_detect[3]:
-                            allowed_movement[3] = False
+        for box in sprite_manager.get_groups([Box, IceCube]):
+            if not box.state == 'drown':
+                box_detect = box.detect(game_manager, sprite_manager)
+                if allowed_movement[0] and box.coords == [self.coords[0] + 1, self.coords[1]]:
+                    self.near_boxes[0] = box
+                    if not box_detect[0]:
+                        allowed_movement[0] = False
+                if allowed_movement[1] and box.coords == [self.coords[0] - 1, self.coords[1]]:
+                    self.near_boxes[1] = box
+                    if not box_detect[1]:
+                        allowed_movement[1] = False
+                if allowed_movement[2] and box.coords == [self.coords[0], self.coords[1] - 1]:
+                    self.near_boxes[2] = box
+                    if not box_detect[2]:
+                        allowed_movement[2] = False
+                if allowed_movement[3] and box.coords == [self.coords[0], self.coords[1] + 1]:
+                    self.near_boxes[3] = box
+                    if not box_detect[3]:
+                        allowed_movement[3] = False
 
         # Returns an array which says whether or not movement in a certain direction is allowed
         # [Right,Left,Up,Down]
@@ -240,14 +239,10 @@ class Player(Sprite):
     def set_drown(self):
         self.state = 'drown'
         self.z_order = ZHeights.UNDERWATER_OBJECT_HEIGHT
-        raise IndexError("WHAT THE FUCK")
 
     def post_detect(self, game_manager: GameManager.GameManager, sprite_manager: SpritesManager.GroupSpritesManager):
         vortex: Vortex = sprite_manager.get_single(Vortex)
 
-        [print(r) for r in game_manager.get_layout()]
-        print(self.coords)
-        print("\n\n\n")
         # detects if player is standing on water and sets state to drown as well as starts reset timer if on water
         if game_manager.get_layout()[int(self.coords[1])][int(self.coords[0])] == 'W':
             # Globe.MENU.game.reset = True

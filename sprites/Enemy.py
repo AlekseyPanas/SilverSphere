@@ -76,14 +76,13 @@ class Enemy(Sprite):
         explode_list = []
         explode = False
 
-        for g in sprite_manager.get_groups([Player, Box, IceCube]):
-            for sprite in g:
-                dist = Constants.distance(self.pos, sprite.pos)
-                if not sprite.state == "drown":
-                    if dist < Constants.cscale(60):
-                        explode = True
-                    if dist < Constants.cscale(108):
-                        explode_list.append(sprite)
+        for sprite in sprite_manager.get_groups([Player, Box, IceCube]):
+            dist = Constants.distance(self.pos, sprite.pos)
+            if not sprite.state == "drown":
+                if dist < Constants.cscale(50):
+                    explode = True
+                if dist < Constants.cscale(108):
+                    explode_list.append(sprite)
 
         if explode:
             for sprite in explode_list:
@@ -142,7 +141,7 @@ class Enemy(Sprite):
                     self.dir = self.path_dir[self.path_index]
                     self.current_image = self.dir_dict[self.dir]
 
-                self.coords = [(self.pos[0] - 40) / 50, (self.pos[1] - 40) / 50]
+                self.coords = [(self.pos[0] - 25) / 50, (self.pos[1] - 25) / 50]
 
                 if game_manager.get_layout()[int(self.coords[1])][int(self.coords[0])] == "W":
                     self.set_drown()
