@@ -6,8 +6,8 @@ from game.Renderers import RenderData
 from sprites.Sprite import Sprite, ZHeights
 from sprites.Player import Player
 from sprites.Box import IceCube, Box
-from managers.Managers import PreAsset, ASSET_LOADER, register_assets
-from Constants import spritesheet2frames, path2asset
+from managers.Managers import PreAsset, AnimationPreAsset, ASSET_LOADER, register_assets
+from Constants import spritesheet2frames, path2asset, scale_surfaces
 import Constants
 from managers import GameManager
 from game import SpritesManager
@@ -16,20 +16,20 @@ from game import SpritesManager
 @register_assets(ASSET_LOADER)
 class Enemy(Sprite):
     ENEMY_IMAGE: pygame.Surface = PreAsset(path2asset("images/Golden Ball.png"), (51, 51))
-    ENEMY_UP_IMAGE: pygame.Surface = PreAsset(path2asset("images/Gold Up.png"), (204, 51))
-    ENEMY_DOWN_IMAGE: pygame.Surface = PreAsset(path2asset("images/Gold Down.png"), (204, 51))
-    ENEMY_RIGHT_IMAGE: pygame.Surface = PreAsset(path2asset("images/Gold Right.png"), (204, 51))
-    ENEMY_LEFT_IMAGE: pygame.Surface = PreAsset(path2asset("images/Gold Left.png"), (204, 51))
+    ENEMY_UP_IMAGE: list[pygame.Surface] = AnimationPreAsset(path2asset("images/Gold Up.png"), (51, 51), True, (4, 1))
+    ENEMY_DOWN_IMAGE: list[pygame.Surface] = AnimationPreAsset(path2asset("images/Gold Down.png"), (51, 51), True, (4, 1))
+    ENEMY_RIGHT_IMAGE: list[pygame.Surface] = AnimationPreAsset(path2asset("images/Gold Right.png"), (51, 51), True, (4, 1))
+    ENEMY_LEFT_IMAGE: list[pygame.Surface] = AnimationPreAsset(path2asset("images/Gold Left.png"), (51, 51), True, (4, 1))
 
     def __init__(self, lifetime: int | None, z_order: float,
                  coords: tuple[int, int], path_dir: list[int], path_dist: list[int]):
         super().__init__(lifetime, z_order)
         # Paths: [direction array ie "u", "d", "r", "l"] [distance array]
         self.image = self.ENEMY_IMAGE
-        self.img_l = spritesheet2frames(self.ENEMY_LEFT_IMAGE, (4, 1), 0)
-        self.img_r = spritesheet2frames(self.ENEMY_RIGHT_IMAGE, (4, 1), 0)
-        self.img_u = spritesheet2frames(self.ENEMY_UP_IMAGE, (4, 1), 0)
-        self.img_d = spritesheet2frames(self.ENEMY_DOWN_IMAGE, (4, 1), 0)
+        self.img_l = self.ENEMY_LEFT_IMAGE
+        self.img_r = self.ENEMY_RIGHT_IMAGE
+        self.img_u = self.ENEMY_UP_IMAGE
+        self.img_d = self.ENEMY_DOWN_IMAGE
         self.__current_index = 0
 
         self.path_dir = path_dir
@@ -64,7 +64,7 @@ class Enemy(Sprite):
 
     def render(self, menu: Menu, game_manager: GameManager.GameManager,
                sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
-        return RenderData(self.z_order, self.current_image[self.__current_index], tuple(self.pos), False)
+        return RenderData(self.z_order, self.current_image[self.__current_index], tuple(Constants.cscale(*self.pos)), False)
 
     def get_shadow(self) -> pygame.Surface | None: return None
 
@@ -79,9 +79,9 @@ class Enemy(Sprite):
         for sprite in sprite_manager.get_groups([Player, Box, IceCube]):
             dist = Constants.distance(self.pos, sprite.pos)
             if not sprite.state == "drown":
-                if dist < Constants.cscale(50):
+                if dist < 50:
                     explode = True
-                if dist < Constants.cscale(108):
+                if dist < 75:
                     explode_list.append(sprite)
 
         if explode:

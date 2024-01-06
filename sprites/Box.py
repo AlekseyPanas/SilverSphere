@@ -1,6 +1,6 @@
 from __future__ import annotations
 import pygame
-from Constants import path2asset
+from Constants import path2asset, cscale
 import Menu
 from game.Renderers import RenderData
 from managers.Managers import PreAsset, ASSET_LOADER, register_assets
@@ -36,7 +36,7 @@ class Box(Sprite):
 
     def render(self, menu: Menu, game_manager: GameManager.GameManager,
                sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
-        return RenderData(self.z_order, self.BOX_IMAGE, tuple(self.pos), False)
+        return RenderData(self.z_order, self.BOX_IMAGE, tuple(cscale(*self.pos)), False)
 
     def get_shadow(self) -> pygame.Surface | None:
         return None

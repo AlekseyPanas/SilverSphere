@@ -95,7 +95,6 @@ class Vortex(Sprite):
     def render(self, menu: Menu, game_manager: GameManager.GameManager,
                sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
         if self.state == "blank" or self.current_image is None:
-            print("here")
             return None
         return RenderData(self.z_order, self.current_image[self.current_index], Constants.cscale(*self.pos), False)
 

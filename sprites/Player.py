@@ -5,22 +5,25 @@ from game.Renderers import RenderData
 from sprites.Sprite import Sprite, ZHeights
 from sprites.Box import Box, IceCube
 from sprites.Vortex import Vortex
-from managers.Managers import PreAsset, ASSET_LOADER, register_assets
+from managers.Managers import PreAsset, AnimationPreAsset, ASSET_LOADER, register_assets
 from Constants import spritesheet2frames, path2asset
 import Constants
 from managers import GameManager
 from game import SpritesManager
-from pprint import pprint
 
 
 @register_assets(ASSET_LOADER)
 class Player(Sprite):
+    ANIM_INTERMEDIATES = 1
+    NUM_FRAMES_PRE = 4
+    NUM_FRAMES = (ANIM_INTERMEDIATES + 1) * NUM_FRAMES_PRE
+
     # Player Animation images
     PLAYER_IMAGE: pygame.Surface = PreAsset(path2asset("images/Silver Ball.png"), (51, 51))
-    PLAYER_UP_IMAGE: pygame.Surface = PreAsset(path2asset("images/Silver Up.png"), (204, 51))
-    PLAYER_DOWN_IMAGE: pygame.Surface = PreAsset(path2asset("images/Silver Ball Down.png"), (204, 51))
-    PLAYER_RIGHT_IMAGE: pygame.Surface = PreAsset(path2asset("images/Silver Right.png"), (204, 51))
-    PLAYER_LEFT_IMAGE: pygame.Surface = PreAsset(path2asset("images/Silver Left.png"), (204, 51))
+    PLAYER_UP_IMAGE: list[pygame.Surface] = AnimationPreAsset(path2asset("images/Silver Up.png"), (51, 51), True, (4, 1), ANIM_INTERMEDIATES)
+    PLAYER_DOWN_IMAGE: list[pygame.Surface] = AnimationPreAsset(path2asset("images/Silver Ball Down.png"), (51, 51), True, (4, 1), ANIM_INTERMEDIATES)
+    PLAYER_RIGHT_IMAGE: list[pygame.Surface] = AnimationPreAsset(path2asset("images/Silver Right.png"), (51, 51), True, (4, 1), ANIM_INTERMEDIATES)
+    PLAYER_LEFT_IMAGE: list[pygame.Surface] = AnimationPreAsset(path2asset("images/Silver Left.png"), (51, 51), True, (4, 1), ANIM_INTERMEDIATES)
 
     # Ball shadow
     BALL_SHADOW_IMAGE: pygame.Surface = PreAsset(path2asset("images/ball shadow.png"), (57, 30))
@@ -42,10 +45,10 @@ class Player(Sprite):
 
         # Load animations
         self.image = self.PLAYER_IMAGE
-        self.img_l = spritesheet2frames(self.PLAYER_LEFT_IMAGE, (4, 1), 0)
-        self.img_r = spritesheet2frames(self.PLAYER_RIGHT_IMAGE, (4, 1), 0)
-        self.img_u = spritesheet2frames(self.PLAYER_UP_IMAGE, (4, 1), 0)
-        self.img_d = spritesheet2frames(self.PLAYER_DOWN_IMAGE, (4, 1), 0)
+        self.img_l = self.PLAYER_LEFT_IMAGE
+        self.img_r = self.PLAYER_RIGHT_IMAGE
+        self.img_u = self.PLAYER_UP_IMAGE
+        self.img_d = self.PLAYER_DOWN_IMAGE
 
         # Image and Animation info
         self.time = 0
@@ -109,8 +112,8 @@ class Player(Sprite):
 
     def animate(self):
         if self.state == "r" or self.state == "l" or self.state == "u" or self.state == "d":
-            self.current_index = int((self.time % 24) // 6)
-            self.time += 0.95
+            self.current_index = int((self.time % (6 * self.NUM_FRAMES)) // 6)
+            self.time += 0.95 * (self.ANIM_INTERMEDIATES + 1)
 
     def event_handler(self, menu: Menu):
         """Keeps track of user inputs"""

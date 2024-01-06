@@ -28,7 +28,7 @@ class GameManager(Manager):
     GRID_PIXELS_Y = TILE_SIZE * GRID_SIZE_Y
     GRID_PIXELS = (GRID_PIXELS_X, GRID_PIXELS_Y)
 
-    def __init__(self, menu: Menu, level_idx: int = 0):
+    def __init__(self, menu: Menu, level_idx: int = 5):
         super().__init__(menu)
         self.__level_json = menu.get_level_json_at_index(level_idx)  # dictionary of level object (see levels.json)
         self.__layout = self.__level_json["layout"]

@@ -20,8 +20,8 @@ from enum import IntEnum
 class LevelGenerator:
     """Given level JSON, compute level assets and generate all sprites"""
     # Tile Images
-    FLOOR_TILE_IMAGE: pygame.Surface = PreAsset("assets/images/floor.png", (50, 50))
-    IRON_TILE_IMAGE: pygame.Surface = PreAsset("assets/images/iron.png", (50, 50))
+    FLOOR_TILE_IMAGE: pygame.Surface = PreAsset("assets/images/floor.png", (50, 50), False)
+    IRON_TILE_IMAGE: pygame.Surface = PreAsset("assets/images/iron.png", (50, 50), False)
     WATER_IMAGE: pygame.Surface = PreAsset("assets/images/water.png", (1000, 600))  # Translucent blue water overlay
     MARBLE_IMAGE: pygame.Surface = PreAsset("assets/images/marble background.png", (1000, 600))  # Underwater floor background
 

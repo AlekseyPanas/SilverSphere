@@ -107,8 +107,8 @@ def opacity_test():
 
 def spritesheet_parser():
     screen = pygame.display.set_mode((500, 500))
-    sheet = pygame.image.load("./assets/images/explosion.png").convert_alpha()
-    frames = Constants.spritesheet2frames(sheet, (9, 9), 10)
+    sheet = pygame.image.load("./assets/images/Gold Up.png").convert_alpha()
+    frames = Constants.spritesheet2frames(sheet, (4, 1), 10)
 
     running = True
     i = 0
@@ -116,7 +116,7 @@ def spritesheet_parser():
     while running:
         screen.fill((255, 255, 255))
 
-        screen.blit(frames[(i // 5) % len(frames)], (100, 100))
+        screen.blit(frames[(i // 500) % len(frames)], (100, 100))
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
@@ -151,4 +151,4 @@ def inheritance_test():
 
 
 if __name__ == "__main__":
-    generator_test()
+    spritesheet_parser()

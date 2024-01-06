@@ -5,9 +5,9 @@ import sys
 import pathlib
 pygame.init()
 
-SCREEN_SIZE = (1030, 700)
+#SCREEN_SIZE = (1030, 700)
 #SCREEN_SIZE = (515, 350)
-#SCREEN_SIZE = (824, 560)
+SCREEN_SIZE = (824, 560)
 #SCREEN_SIZE = (2060, 1400)
 
 ASSET_PATH = pathlib.Path(sys.argv[0]).parent.joinpath("assets")
@@ -61,6 +61,11 @@ def posscale(*coordinate, divisors=(1030, 700)):
         return coordinate[0] / divisors[0] * SCREEN_SIZE[0]
 
 
+def scale_surfaces(surfs: list[pygame.Surface]):
+    """Given multiple surfaces in WORLD coordinates (1030, 700), scale them to current resolution"""
+    return [pygame.transform.smoothscale(s, cscale(*s.get_size())).convert_alpha() for s in surfs]
+
+
 def spritesheet2frames(spritesheet: pygame.Surface, frame_dims_xy: tuple[int, int],
                        intermediates=0) -> list[pygame.Surface]:
     """
@@ -87,20 +92,21 @@ def spritesheet2frames(spritesheet: pygame.Surface, frame_dims_xy: tuple[int, in
 
     # Compute intermediates
     alpha_increment = 255 / (intermediates + 1)
-    for f in range(len(frames) - 1):
+    for f in range(len(frames)):
         final_frames.append(frames[f])
         for i in range(1, intermediates + 1):
             cur_alpha = alpha_increment * i
 
             frame = pygame.Surface(frame_size, pygame.SRCALPHA, depth=32).convert_alpha()
             f_prev = frames[f].copy()
-            f_next = frames[f+1].copy()
+            #f_prev.fill((0, 0, 0, max(0, i - (intermediates // 2)) * 2 * alpha_increment), special_flags=pygame.BLEND_RGBA_SUB)
+            #f_prev.fill((0, 0, 0, cur_alpha), special_flags=pygame.BLEND_RGBA_SUB)
+            f_next = frames[(f+1) % len(frames)].copy()
             f_next.fill((0, 0, 0, 255 - cur_alpha), special_flags=pygame.BLEND_RGBA_SUB)
 
             frame.blit(f_prev, (0, 0))
             frame.blit(f_next, (0, 0))
             final_frames.append(frame.convert_alpha())
-    final_frames.append(frames[-1])
 
     return final_frames
 
