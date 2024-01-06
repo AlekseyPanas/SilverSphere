@@ -103,29 +103,7 @@ class Level:
         self.name = json["name"]
         self.ground_layout = json["layout"]
 
-        # Adds vortex to sprites list
-        self.add_sprite(Sprite.Vortex(None, 8, {"vortex"}, json["vortex_pos"]))
-        # Adds boxes
-        for idx, box_pos in enumerate(self.json["box_poses"]):
-            if self.json["box_types"][idx] == "ice":
-                self.add_sprite(Sprite.IceCube(None, 10, {"box", "icecube"}, box_pos))
-            else:
-                self.add_sprite(Sprite.Box(None, 10, {"box"}, box_pos))
-        # Adds X tiles
-        for pos in json["ice_x_poses"]:
-            self.add_sprite(Sprite.X_Ice_Tile(None, 1, {"xice"}, pos))
-        for pos in json["box_x_poses"]:
-            self.add_sprite(Sprite.X_Box_Tile(None, 1, {"xbox"}, pos))
-        # Adds enemies
-        for enemy in json["enemies"]:
-            self.add_sprite(Sprite.Enemy(None, 9, "enemy", enemy["start_pos"], enemy["path_dir"], enemy["path_dist"]))
 
-
-
-        self.add_sprite(Sprite.StaticImage(None, -1, {}, ground_layout_surf, (15, 15)))
-
-        # Adds water
-        self.add_sprite(Sprite.StaticImage(None, -2, {}, Constants.WATER_IMAGE, (15, 15)))
 
         # Adds shadows
         ground_layout_surf = pygame.Surface((1000, 600), pygame.SRCALPHA, 32)

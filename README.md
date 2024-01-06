@@ -48,6 +48,7 @@ Changes
 - Drowned enemy spheres now act as platforms
 - Fixed X tiles drawn above metal boxes
 - Fixed ball clipping slightly into pushed boxes
+- Fixed relative paths breaking when executing script from another directory
 
 Bugs
 - If a level is beaten with a better time, no additional score is given

@@ -16,23 +16,37 @@ def time_seq_loops():
             math.factorial(150)
 
 
-    def test():
+    def both():
+        for i in range(200):
+            math.factorial(150)
+        for i in range(300):
+            math.factorial(150)
+
+    def f1():
         for i in range(4000):
             hi()
             bye()
 
 
-    def test2():
+    def f2():
         for i in range(4000):
             hi()
         for i in range(4000):
             bye()
 
 
-    t = timeit.timeit("test()", globals={"test": test}, number=1)
+    def f3():
+        for i in range(4000):
+            both()
+
+
+    t = timeit.timeit("f1()", globals={"f1": f1}, number=1)
     print(t)
 
-    t = timeit.timeit("test2()", globals={"test2": test2}, number=1)
+    t = timeit.timeit("f2()", globals={"f2": f2}, number=1)
+    print(t)
+
+    t = timeit.timeit("f3()", globals={"f3": f3}, number=1)
     print(t)
 
 
@@ -91,7 +105,7 @@ def opacity_test():
         screen.blit(sqr2, (100, 100))
 
 
-def test_spritesheet_parser():
+def spritesheet_parser():
     screen = pygame.display.set_mode((500, 500))
     sheet = pygame.image.load("./assets/images/explosion.png").convert_alpha()
     frames = Constants.spritesheet2frames(sheet, (9, 9), 10)
@@ -128,4 +142,4 @@ def inheritance_test():
 
 
 if __name__ == "__main__":
-    inheritance_test()
+    time_seq_loops()

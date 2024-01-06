@@ -28,7 +28,7 @@ class GroundShadowManager(ShadowManager):
         pass
 
     def render(self, menu: Menu, game_manager: GameManager.GameManager,
-               sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData:
+               sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
         pass
 
     def get_shadow(self) -> pygame.Surface | None:
@@ -47,7 +47,7 @@ class WaterShadowManager(ShadowManager):
         pass
 
     def render(self, menu: Menu, game_manager: GameManager.GameManager,
-               sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData:
+               sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
         pass
 
     def get_shadow(self) -> pygame.Surface | None:

@@ -32,8 +32,11 @@ class SpriteGroup:
 class GroupSpritesManager:
     def __init__(self, level_json: dict):
         self.__level_json = level_json
-        self.__sprite_groups: list[SpriteGroup] = []
+        self.__sprite_groups: dict[type, SpriteGroup] = dict()
         self.__shadow_managers: SpriteGroup = SpriteGroup(ShadowManager)
+
+    def __exists_group(self, t: type):
+        return self.__sprite_groups.get(t, None) is not None
 
     def add_sprite(self, sprite: Sprite):
         """Add sprite to existing group or create new one"""
@@ -43,13 +46,12 @@ class GroupSpritesManager:
             return
 
         # Add to group by type or create new one
-        for g in self.__sprite_groups:
-            if g.t == type(sprite):
-                g.add_sprite(sprite)
-                return
-        new_group = SpriteGroup(type(sprite))
-        self.__sprite_groups.append(new_group)
-        new_group.add_sprite(sprite)
+        if self.__exists_group(type(sprite)):
+            self.__sprite_groups[type(sprite)].add_sprite(sprite)
+        else:
+            new_group = SpriteGroup(type(sprite))
+            self.__sprite_groups[type(sprite)] = new_group
+            new_group.add_sprite(sprite)
 
     def remove_sprite(self, sprite: Sprite):
         """Delete sprite. Does not throw errors if sprite didnt exist"""
@@ -59,15 +61,18 @@ class GroupSpritesManager:
             return
 
         # Remove from appropriate group
-        for g in self.__sprite_groups:
-            if g.t == type(sprite):
-                g.delete_sprite(sprite)
+        if self.__exists_group(type(sprite)):
+            self.__sprite_groups[type(sprite)].delete_sprite(sprite)
+
+    def get_single(self, t: type) -> Sprite:
+        """Get single sprite from the sprite group of type t. Intended for convenience for groups with only
+        one item"""
+        return self.get_group(t)[0]
 
     def get_group(self, t: type) -> list[Sprite]:
         """Get list of sprites of type t, or empty list if none, excluding shadow managers"""
-        for g in self.__sprite_groups:
-            if g.t == t:
-                return g.get_sprites()
+        if self.__exists_group(t):
+            return self.__sprite_groups[t].get_sprites()
         return []
 
     def get_groups(self, ts: list[type]) -> list[list[Sprite]]:
@@ -79,7 +84,7 @@ class GroupSpritesManager:
 
     def get_all_sprites(self) -> list[list[Sprite]]:
         """Get all sprites excluding shadow managers"""
-        return [g.get_sprites() for g in self.__sprite_groups]
+        return [g.get_sprites() for g in self.__sprite_groups.values()]
 
     def get_shadow_managers(self) -> list[ShadowManager]:
         """Return shadow managers"""
@@ -87,12 +92,12 @@ class GroupSpritesManager:
 
     def decrement_lifetimes(self):
         """Subtract 1 from every sprite lifetime"""
-        for g in self.__sprite_groups + [self.__shadow_managers]:
+        for g in list(self.__sprite_groups.values()) + [self.__shadow_managers]:
             for spr in g.get_sprites():
                 if spr.lifetime is not None:
                     spr.lifetime -= 1
 
     def flush_all(self):
         """Removes dead sprites and flushes all queues"""
-        for g in self.__sprite_groups + [self.__shadow_managers]:
+        for g in list(self.__sprite_groups.values()) + [self.__shadow_managers]:
             g.flush()

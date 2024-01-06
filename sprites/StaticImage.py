@@ -18,7 +18,7 @@ class StaticImage(Sprite):
     def update(self, menu: Menu, game_manager: GameManager.GameManager, sprite_manager: SpritesManager.GroupSpritesManager): pass
 
     def render(self, menu: Menu, game_manager: GameManager.GameManager,
-               sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData:
+               sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
         return RenderData(self.z_order, self.__image, self.__topleft, True)
 
     def get_shadow(self) -> pygame.Surface | None: return None

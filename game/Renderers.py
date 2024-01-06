@@ -9,10 +9,11 @@ import functools
 @functools.total_ordering
 class RenderData:
     """Stores data passed to a renderer for a singular sprite
-    is_top_left: indicates if pos refers to top left corner. If false, pos is the center
+    is_top_left: indicates if pos refers to top left corner. If false, pos is the center.
+    Pos must be given in resolution-scaled coordinates
     """
     z_order: float
-    surf: pygame.Surface | None
+    surf: pygame.Surface
     pos: tuple[int, int]
     is_top_left: bool
 
@@ -34,10 +35,9 @@ class ZHeapRenderer:
         while len(self.__surface_heap):
             z, rend_dat = heapq.heappop(self.__surface_heap)
 
-            if rend_dat.surf is not None:
-                if rend_dat.is_top_left:
-                    r = rend_dat.surf.get_rect(topleft=rend_dat.pos)
-                else:
-                    r = rend_dat.surf.get_rect(center=rend_dat.pos)
+            if rend_dat.is_top_left:
+                r = rend_dat.surf.get_rect(topleft=rend_dat.pos)
+            else:
+                r = rend_dat.surf.get_rect(center=rend_dat.pos)
 
-                game_surf.blit(rend_dat.surf, r, special_flags=pygame.BLEND_ALPHA_SDL2)
+            game_surf.blit(rend_dat.surf, r, special_flags=pygame.BLEND_ALPHA_SDL2)

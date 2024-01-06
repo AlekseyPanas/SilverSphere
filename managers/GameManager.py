@@ -2,7 +2,7 @@ from __future__ import annotations
 import pygame
 from managers.Managers import Manager, ASSET_LOADER, register_assets, PreAsset
 import Menu
-from Constants import cscale
+from Constants import cscale, path2asset
 import Constants
 from game.Renderers import ZHeapRenderer
 from game.SpritesManager import GroupSpritesManager
@@ -12,7 +12,7 @@ from Button import Button
 
 @register_assets(ASSET_LOADER)
 class GameManager(Manager):
-    EXIT_ICON_IMAGE: pygame.Surface = PreAsset("assets/images/X.png", (50, 50))  # [X] icon for exiting level
+    EXIT_ICON_IMAGE: pygame.Surface = PreAsset(path2asset("images/X.png"), (50, 50))  # [X] icon for exiting level
 
     # Scaled tile size in pixels
     TILE_SIZE = cscale(50)
@@ -28,6 +28,8 @@ class GameManager(Manager):
     def __init__(self, menu: Menu, level_idx: int = 23):
         super().__init__(menu)
         self.__level_json = menu.get_level_json_at_index(level_idx)  # dictionary of level object (see levels.json)
+        self.__layout = self.__level_json["layout"]
+
         self.__game_screen = pygame.Surface(self.GRID_PIXELS)  # surface for game
         self.__renderer = ZHeapRenderer()  # Basic renderer using heap with z-order priority
         self.__sprites_manager = GroupSpritesManager(self.__level_json)  # Stores game sprites
@@ -41,6 +43,10 @@ class GameManager(Manager):
         LevelGenerator(self.__level_json).generate_sprites(self.__sprites_manager)  # Generate level
         self.__sprites_manager.flush_all()  # Flush manager. The sprites aren't added until flushed
 
+    def get_layout(self) -> list[list[str]]:
+        """Return level's string-based layout"""
+        return self.__layout
+
     def run(self, screen: pygame.Surface, menu: Menu):
         # Update all sprites
         for g in self.__sprites_manager.get_all_sprites():
@@ -52,7 +58,9 @@ class GameManager(Manager):
         # Add content to frame and register shadows
         for g in self.__sprites_manager.get_all_sprites():
             for s in g:
-                self.__renderer.add_to_frame(s.render(menu, self, self.__sprites_manager))  # Render sprite
+                render_output = s.render(menu, self, self.__sprites_manager)
+                if render_output is not None:
+                    self.__renderer.add_to_frame(render_output)  # Render sprite
 
                 # Register shadows
                 shad = s.get_shadow()
