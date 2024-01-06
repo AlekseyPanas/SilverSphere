@@ -19,6 +19,7 @@ class ZHeights:
     GROUND_SHADOW_HEIGHT = 1.501
     X_HEIGHT = 1.7
     ON_GROUND_OBJECT_HEIGHT = 2.5
+    EXPLOSION_HEIGHT = 3
 
 
 class Sprite:
@@ -61,95 +62,10 @@ class Sprite:
 
 
     #
-    # # Enemy ball animations
-
-    #
-
-    #
-    #
-    # # Box, Ice, and X images
-    #
     # BORDER_IMAGE: pygame.Surface = PreAsset("assets/images/border.png", (1030, 700))  # Level Border Image
 
     # WATER_SHADOW_IMAGE: pygame.Surface = PreAsset("assets/images/shadow 2.png", (100, 100))  # tile shadow
 
-    # EXPLOSION_IMAGE: pygame.Surface = PreAsset("assets/images/explosion.png", (800, 800))  # Explosion animation
-    #
-    # # In-level buttons
-    # INLEVEL_PLAY_BUTTON_IMAGE = PreAsset("assets/images/play.png")
-    # NEXTLVL_BUTTON_IMAGE = PreAsset("assets/images/nxtlvl.png")
-
-#
-# class Animation(Object):
-#     def __init__(self, lifetime, z_order, tags, sheet_dimensions, animation_speed, sheet, center, frame_count):
-#         # If none is entered for lifetime, the lifetime is set to -1 iteration of the animation
-#         if lifetime == -1:
-#             life = frame_count * animation_speed - 1
-#         else:
-#             life = lifetime
-#         super().__init__(life, z_order, tags)
-#
-#         # The dimensions of the sprite sheet by frame count (width, height)
-#         self.sheet_dimensions = sheet_dimensions
-#         # The amount of game ticks that should pass between each frame
-#         self.animation_speed = animation_speed
-#
-#         self.sheet_frames_w = sheet_dimensions[0]
-#         self.sheet_frames_h = sheet_dimensions[1]
-#
-#         # The sprite sheet image
-#         self.sheet = sheet
-#         # Dimensions of an individual frame
-#         self.frame_width = self.sheet.get_width() / self.sheet_frames_w
-#         self.frame_height = self.sheet.get_height() / self.sheet_frames_h
-#
-#         # Center position of the animation
-#         self.pos = center
-#
-#         # Counts the ticks. Used for reference in the animation calculations
-#         self.tick = 0
-#         # Gives the current frame number
-#         self.frame = 1
-#         # Gets the vertical and horizontal frame coordinates to point to the current frame
-#         self.frame_pos = [0, 0]
-#         # Total # of frames in sheet
-#         self.frame_count = frame_count
-#
-#         # Surface onto which the animation will be drawn
-#         self.surface = pygame.Surface((self.frame_width, self.frame_height), pygame.SRCALPHA, 32)
-#         # Calls update once to blit the first frame and resets the tick
-#         self.surface.blit(self.sheet, (0, 0))
-#
-#     def run_sprite(self, screen, update_lock):
-#         if not update_lock:
-#             self.update()
-#         self.draw_sprite(screen)
-#
-#     def update(self):
-#         # Updates
-#         if self.tick % self.animation_speed == 0:
-#             # Calculates the sheet position of frame
-#             horizontal_pos = self.frame % self.sheet_frames_w
-#             self.frame_pos = ((horizontal_pos if not horizontal_pos == 0 else 9) - 1, int(self.frame / self.sheet_frames_h - .01))
-#             # Clears surface
-#             self.surface.fill((255, 255, 255, 0))
-#
-#             # Resets frame when it finishes cycling the sheet
-#             self.frame += 1
-#             if self.frame > self.frame_count:
-#                 self.frame = 1
-#
-#             # Shifts the sheet accordingly and blits the frame onto the surface
-#             self.surface.blit(self.sheet,
-#                               (-self.frame_pos[0] * self.frame_width, -self.frame_pos[1] * self.frame_height))
-#
-#         self.tick += 1
-#
-#     def draw_sprite(self, screen):
-#         # Blits surface onto screen
-#         screen.blit(self.surface, (self.pos[0] - self.frame_width / 2, self.pos[1] - self.frame_height / 2))
-#
-#
 # # Takes a surface along with 2 scale factors (ie. .3, 1.5, 2, etc)
 # # Uses the scale factors combined with the time to make the object grow on screen over time
 # # Includes additional option allowing the user to fade the object

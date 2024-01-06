@@ -84,6 +84,3 @@ class LevelGenerator:
         metal_surf = pygame.transform.smoothscale(metal_surf, Constants.cscale(1000, 600)).convert_alpha()
 
         return tile_surf, metal_surf
-
-    def generate_metal_grid(self):
-        pass

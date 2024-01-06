@@ -15,8 +15,6 @@ from game import SpritesManager
 @register_assets(ASSET_LOADER)
 class Player(Sprite):
     ANIM_INTERMEDIATES = 1
-    NUM_FRAMES_PRE = 4
-    NUM_FRAMES = (ANIM_INTERMEDIATES + 1) * NUM_FRAMES_PRE
 
     # Player Animation images
     PLAYER_IMAGE: pygame.Surface = PreAsset(path2asset("images/Silver Ball.png"), (51, 51))
@@ -49,6 +47,7 @@ class Player(Sprite):
         self.img_r = self.PLAYER_RIGHT_IMAGE
         self.img_u = self.PLAYER_UP_IMAGE
         self.img_d = self.PLAYER_DOWN_IMAGE
+        self.__num_frames = len(self.PLAYER_LEFT_IMAGE)
 
         # Image and Animation info
         self.time = 0
@@ -112,7 +111,7 @@ class Player(Sprite):
 
     def animate(self):
         if self.state == "r" or self.state == "l" or self.state == "u" or self.state == "d":
-            self.current_index = int((self.time % (6 * self.NUM_FRAMES)) // 6)
+            self.current_index = int((self.time % (6 * self.__num_frames)) // 6)
             self.time += 0.95 * (self.ANIM_INTERMEDIATES + 1)
 
     def event_handler(self, menu: Menu):

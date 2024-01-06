@@ -107,8 +107,12 @@ def opacity_test():
 
 def spritesheet_parser():
     screen = pygame.display.set_mode((500, 500))
-    sheet = pygame.image.load("./assets/images/Gold Up.png").convert_alpha()
-    frames = Constants.spritesheet2frames(sheet, (4, 1), 10)
+    # sheet = pygame.Surface((300, 300), pygame.SRCALPHA, depth=32).convert_alpha()
+    # pygame.draw.rect(sheet, (255, 0, 0), (0, 0, 100, 100))
+    # pygame.draw.rect(sheet, (255, 0, 0), (100, 100, 100, 100))
+    # pygame.draw.rect(sheet, (255, 0, 0), (200, 200, 100, 100))
+    sheet = pygame.image.load("./assets/images/vortex open.png").convert_alpha()
+    frames = Constants.spritesheet2frames(sheet.convert_alpha(), (9, 1), 10, False)
 
     running = True
     i = 0

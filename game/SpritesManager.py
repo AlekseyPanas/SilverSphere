@@ -2,6 +2,7 @@ from __future__ import annotations
 from sprites.Sprite import Sprite
 from sprites.ShadowManager import ShadowManager
 from typing import Iterable
+from copy import copy
 
 
 class SpriteGroup:
@@ -52,8 +53,8 @@ class GroupSpritesManager:
             self.__sprite_groups[type(sprite)].add_sprite(sprite)
         else:
             new_group = SpriteGroup(type(sprite))
-            self.__sprite_groups[type(sprite)] = new_group
             new_group.add_sprite(sprite)
+            self.__sprite_groups[type(sprite)] = new_group
 
     def remove_sprite(self, sprite: Sprite):
         """Delete sprite. Does not throw errors if sprite didnt exist"""
@@ -85,7 +86,7 @@ class GroupSpritesManager:
 
     def get_all_sprites(self) -> Iterable[Sprite]:
         """Get all sprites excluding shadow managers"""
-        for g in self.__sprite_groups.values():
+        for g in list(self.__sprite_groups.values()):
             for sprite in g.get_sprites():
                 yield sprite
 

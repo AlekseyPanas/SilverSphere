@@ -38,7 +38,7 @@ class DelayedAssetLoader:
     @staticmethod
     def convert_animation_preasset(asset: AnimationPreAsset):
         """Parse spritesheet and scale each frame"""
-        frames = spritesheet2frames(pygame.image.load(asset.path), asset.frame_dims, asset.intermediates)
+        frames = spritesheet2frames(pygame.image.load(asset.path), asset.frame_dims, asset.intermediates, asset.loop)
         parsed_frames = []
         for f in frames:
             if asset.size is None:
@@ -67,6 +67,7 @@ class AnimationPreAsset(PreAsset):
     """Computes spritesheet and scales each frame to specified size"""
     frame_dims: tuple[int, int] = (1, 1)
     intermediates: int = 0
+    loop: bool = True
 
 
 def register_assets(asset_loader: DelayedAssetLoader):

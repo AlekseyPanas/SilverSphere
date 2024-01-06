@@ -6,6 +6,7 @@ from game.Renderers import RenderData
 from sprites.Sprite import Sprite, ZHeights
 from sprites.Player import Player
 from sprites.Box import IceCube, Box
+from sprites.AnimationEffect import ExplosionAnimation
 from managers.Managers import PreAsset, AnimationPreAsset, ASSET_LOADER, register_assets
 from Constants import spritesheet2frames, path2asset, scale_surfaces
 import Constants
@@ -92,11 +93,9 @@ class Enemy(Sprite):
                 else:
                     sprite.kill = True
                 self.kill = True
-                # Globe.MENU.game.add_sprite(Animation(-1, 15, {}, (9, 9), 1, Constants.EXPLOSION_IMAGE,
-                #                                      Constants.cscale(*sprite.pos), 74))
-        # if self.kill:
-        #     Globe.MENU.game.add_sprite(Animation(-1, 15, {}, (9, 9), 1, Constants.EXPLOSION_IMAGE,
-        #                                          Constants.cscale(*self.pos), 74))
+                sprite_manager.add_sprite(ExplosionAnimation(sprite.pos))
+        if self.kill:
+            sprite_manager.add_sprite(ExplosionAnimation(tuple(self.pos)))
 
     def move(self, game_manager: GameManager):
         if not self.dir == "drown":

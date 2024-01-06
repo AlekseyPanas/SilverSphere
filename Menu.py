@@ -46,7 +46,7 @@ class Menu:
         self.completed = [False] * len(self.levels)
         self.__load_player_data()
 
-        self.menu_state: MenuStates = MenuStates.GAME  # What state is the menu in
+        self.menu_state: MenuStates = MenuStates.MAIN  # What state is the menu in
         self.__managers: list[Optional[Manager]] = [None] * len(MenuStates)  # Instances of menu state managers
         self.__switch_params: dict = dict()  # A tuple of parameters
         self.__is_switched = False  # Indicates that state has been changed
@@ -128,9 +128,3 @@ class Menu:
             clock.tick(45)
 
         self.handle_exit()  # Safely terminate (i.e save game)
-
-
-    # def start_game(self, idx):
-    #     self.load_levels()
-    #     self.game = Level.Level(self.levels[idx])
-    #     self.menu_state = 'game'

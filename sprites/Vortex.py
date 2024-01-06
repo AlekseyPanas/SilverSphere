@@ -1,7 +1,7 @@
 from __future__ import annotations
 import pygame
 import Constants
-from Constants import path2asset
+from Constants import path2asset, spritesheet2frames
 import Menu
 from game.Renderers import RenderData
 from managers.Managers import PreAsset, ASSET_LOADER, register_assets
@@ -25,9 +25,9 @@ class Vortex(Sprite):
         self.state = 'blank'
 
         # Vortex animation images
-        self.open = Constants.spritesheet2frames(self.VORTEX_OPEN_IMAGE, (9, 1))
-        self.close = Constants.spritesheet2frames(self.VORTEX_CLOSE_IMAGE, (9, 1))
-        self.stationary = Constants.spritesheet2frames(self.VORTEX_TILE_IMAGE, (11, 1))
+        self.open = spritesheet2frames(self.VORTEX_OPEN_IMAGE, (9, 1))
+        self.close = spritesheet2frames(self.VORTEX_CLOSE_IMAGE, (9, 1))
+        self.stationary = spritesheet2frames(self.VORTEX_TILE_IMAGE, (11, 1))
 
         self.current_image = None
         self.current_index = 0

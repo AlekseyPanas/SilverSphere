@@ -102,7 +102,7 @@ class Box(Sprite):
         # move on it like a normal tile and not drown
         if game_manager.get_layout()[int(self.coords[1])][int(self.coords[0])] == 'W':
             self.set_drown()
-            game_manager.get_layout()[int(self.coords[1])][int(self.coords[0])] = 'S'
+            game_manager.set_layout_solid_at(int(self.coords[1]), int(self.coords[0]))
 
     def move(self, game_manager: GameManager.GameManager, sprite_manager: SpritesManager.GroupSpritesManager):
         # If any directional state is the current state, then run the code
@@ -144,7 +144,7 @@ class Box(Sprite):
 class IceCube(Box):
     def render(self, menu: Menu, game_manager: GameManager.GameManager,
                sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
-        return RenderData(self.z_order, self.ICE_IMAGE, tuple(self.pos), False)
+        return RenderData(self.z_order, self.ICE_IMAGE, cscale(*self.pos), False)
 
     def move(self, game_manager: GameManager.GameManager, sprite_manager: SpritesManager.GroupSpritesManager):
         # If any directional state is the current state, then run the code

@@ -43,6 +43,7 @@ class MenuScreenMainManager(MenuScreenManager):
                     for idx in range(len(menu.completed)):
                         if not menu.completed[idx]:
                             menu.switch_state(Menu.MenuStates.GAME, {"level_idx": idx})
+                            break
 
                 elif self.level_select_button.is_clicked(event.pos):
                     menu.switch_state(Menu.MenuStates.LEVELSEL)
