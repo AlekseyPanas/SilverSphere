@@ -68,7 +68,8 @@ class Enemy(Sprite):
         s = self.current_image[self.__current_index]
         return RenderData(self.z_order, s, s.get_rect(center=tuple(Constants.cscale(*self.pos))))
 
-    def get_shadow(self) -> pygame.Surface | None: return None
+    def get_shadow(self) -> tuple[pygame.Surface, tuple[float, float]] | None:
+        return Player.BALL_SHADOW_IMAGE.copy(), (self.pos[0] + Player.SHADOW_SHIFT[0], self.pos[1] + Player.SHADOW_SHIFT[1])
 
     def animate(self):
         self.__current_index = int((self.time % 24) // 6)

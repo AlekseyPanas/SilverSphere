@@ -15,6 +15,7 @@ from game import SpritesManager
 class Box(Sprite):
     BOX_IMAGE: pygame.Surface = PreAsset(path2asset("images/Wooden crate.png"), (50, 50))
     ICE_IMAGE: pygame.Surface = PreAsset(path2asset("images/icecube.png"), (50, 50))
+    SHADOW_BOX: pygame.Surface = PreAsset(path2asset("images/box_shadow.png"), (100, 100))
 
     def __init__(self, lifetime, z_order, coords):
         super().__init__(lifetime, z_order)
@@ -38,8 +39,8 @@ class Box(Sprite):
                sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
         return RenderData(self.z_order, self.BOX_IMAGE, self.BOX_IMAGE.get_rect(center=tuple(cscale(*self.pos))))
 
-    def get_shadow(self) -> pygame.Surface | None:
-        return None
+    def get_shadow(self) -> tuple[pygame.Surface, tuple[float, float]] | None:
+        return self.SHADOW_BOX.copy(), (self.pos[0] - 25, self.pos[1] - 25)
 
     def detect(self, game_manager: GameManager.GameManager, sprite_manager: SpritesManager.GroupSpritesManager):
         # Right,Left,Up,Down

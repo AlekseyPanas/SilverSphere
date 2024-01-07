@@ -67,7 +67,7 @@ class GameManager(Manager):
         # Asset generation
         self.__exit_button = Button(Constants.cscale(550, 640), Constants.cscale(50, 50), self.EXIT_ICON_IMAGE, state_quantity=2)
         self.__play_button = Button(Constants.cscale(425, 440), Constants.cscale(180, 60), self.INLEVEL_PLAY_BUTTON_IMAGE, state_quantity=2)
-        self.__next_level_button = Button(Constants.cscale(425, 480), Constants.cscale(180, 60), self.NEXTLVL_BUTTON_IMAGE, state_quantity=2)
+        self.__next_level_button = Button(Constants.cscale(80, 480), Constants.cscale(180, 60), self.NEXTLVL_BUTTON_IMAGE, state_quantity=2)
         self.__pre_level_popup_surf = self.__generate_pre_popup()
         self.__post_level_popup_surf = self.__generate_post_popup()
 
@@ -135,7 +135,7 @@ class GameManager(Manager):
             screen.blit(self.__pre_level_popup_surf, self.__pre_level_popup_surf.get_rect(center=(Constants.SCREEN_SIZE[0] / 2, Constants.SCREEN_SIZE[1] / 2)))
             self.__play_button.draw_and_hover(screen, pygame.mouse.get_pos())
         elif self.__state == GameStates.WON:
-            screen.blit(self.__post_level_popup_surf, self.__post_level_popup_surf.get_rect(center=(Constants.SCREEN_SIZE[0] / 2, Constants.SCREEN_SIZE[1] / 2)))
+            screen.blit(self.__post_level_popup_surf, self.__post_level_popup_surf.get_rect(center=(Constants.SCREEN_SIZE[0] / 6.05, Constants.SCREEN_SIZE[1] / 2)))
             self.__next_level_button.draw_and_hover(screen, pygame.mouse.get_pos())
 
             rendered_text = Constants.get_sans(Constants.cscale(36, divisors=(1030,))).render(str(self.__score_gain), True, (0, 0, 0))

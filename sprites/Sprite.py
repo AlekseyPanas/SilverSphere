@@ -55,7 +55,8 @@ class Sprite:
         """Return object's render data"""
 
     @abstractmethod
-    def get_shadow(self) -> pygame.Surface | None:
+    def get_shadow(self) -> tuple[pygame.Surface, tuple[float, float]] | None:
         """Return None if this object casts no shadow. Otherwise, return a Surface
         which represents the shadow this object would cast if it was directly on the
-        ground"""
+        ground. The shadow surface returned should be properly scaled. Also return
+        topleft corner in world coordinates"""

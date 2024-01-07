@@ -26,6 +26,8 @@ class Player(Sprite):
     # Ball shadow
     BALL_SHADOW_IMAGE: pygame.Surface = PreAsset(path2asset("images/ball shadow.png"), (57, 30))
 
+    SHADOW_SHIFT = (-20, 8)
+
     def __init__(self, lifetime: int | None, z_order: float, coords: tuple[int, int]):
         """
         :param lifetime: For temporary surfaces. Decremented manually in manager. None for infinite life
@@ -107,8 +109,8 @@ class Player(Sprite):
             return RenderData(self.z_order, s,
                               s.get_rect(center=Constants.cscale(*self.pos)))
 
-    def get_shadow(self) -> pygame.Surface | None:
-        return self.BALL_SHADOW_IMAGE
+    def get_shadow(self) -> tuple[pygame.Surface, tuple[float, float]] | None:
+        return self.BALL_SHADOW_IMAGE.copy(), (self.pos[0] + self.SHADOW_SHIFT[0], self.pos[1] + self.SHADOW_SHIFT[1])
 
     def animate(self):
         if self.state == "r" or self.state == "l" or self.state == "u" or self.state == "d":
