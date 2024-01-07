@@ -66,7 +66,7 @@ class Menu:
     def get_level_json_at_index(self, idx: int) -> dict:
         return self.levels[idx]
 
-    def __save_game(self):
+    def save_game(self):
         with open("data.json", "w") as file:
             completed = len([x for x in self.completed if x]) - 1
             json.dump({"highest": completed, "score": self.score}, file)
@@ -88,7 +88,7 @@ class Menu:
 
     def handle_exit(self):
         """Called when main loop finishes under any circumstances"""
-        self.__save_game()
+        self.save_game()
 
     def stop_game(self):
         """Set flag to stop game on next loop iteration"""

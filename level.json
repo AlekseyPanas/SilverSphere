@@ -692,7 +692,7 @@
 
     {
         "id": 26,
-        "name": "SMIRNOFFF",
+        "name": "TIGHTROPE",
         "time": 15,
         "layout": [
             ["W","W","W","W","W","W","W","W","W","W","T","W","W","W","W","W","W","W","W","W"],
@@ -723,7 +723,7 @@
 
     {
         "id": 27,
-        "name": "ALEYOSHA",
+        "name": "ADRENALINE",
         "time": 85,
         "layout": [
             ["T","T","T","W","W","W","W","W","W","B","B","W","W","W","W","W","W","W","W","W"],

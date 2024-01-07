@@ -99,12 +99,13 @@ class Player(Sprite):
                sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
         # When stationary
         if self.state == "static" or self.state == 'drown':
-            return RenderData(self.z_order, self.image, Constants.cscale(*self.pos), False)
+            return RenderData(self.z_order, self.image, self.image.get_rect(center=Constants.cscale(*self.pos)))
 
         # moving animation
         if self.state == "r" or self.state == "l" or self.state == "u" or self.state == "d":
-            return RenderData(self.z_order, self.current_image[self.current_index],
-                              Constants.cscale(*self.pos), False)
+            s = self.current_image[self.current_index]
+            return RenderData(self.z_order, s,
+                              s.get_rect(center=Constants.cscale(*self.pos)))
 
     def get_shadow(self) -> pygame.Surface | None:
         return self.BALL_SHADOW_IMAGE
@@ -234,7 +235,7 @@ class Player(Sprite):
                     if not box_detect[3]:
                         allowed_movement[3] = False
 
-        # Returns an array which says whether or not movement in a certain direction is allowed
+        # Returns an array which says whether movement in a certain direction is allowed
         # [Right,Left,Up,Down]
         return allowed_movement
 
@@ -247,7 +248,6 @@ class Player(Sprite):
 
         # detects if player is standing on water and sets state to drown as well as starts reset timer if on water
         if game_manager.get_layout()[int(self.coords[1])][int(self.coords[0])] == 'W':
-            # Globe.MENU.game.reset = True
             self.set_drown()
 
         # Detects if on vortex
@@ -255,9 +255,8 @@ class Player(Sprite):
             # sets the vortex to close
             vortex.set_image = False
             vortex.state = 'close'
+            vortex.player_in = True
             # State drown to make player disappear under the tiles
-            self.state = 'drown'
+            self.kill = True
             # starts timer to open post level menu
-            # Globe.MENU.game.start_ending = True
-
             self.z_order = ZHeights.UNDERWATER_OBJECT_HEIGHT

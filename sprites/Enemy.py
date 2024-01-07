@@ -65,7 +65,8 @@ class Enemy(Sprite):
 
     def render(self, menu: Menu, game_manager: GameManager.GameManager,
                sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
-        return RenderData(self.z_order, self.current_image[self.__current_index], tuple(Constants.cscale(*self.pos)), False)
+        s = self.current_image[self.__current_index]
+        return RenderData(self.z_order, s, s.get_rect(center=tuple(Constants.cscale(*self.pos))))
 
     def get_shadow(self) -> pygame.Surface | None: return None
 
@@ -97,7 +98,7 @@ class Enemy(Sprite):
         if self.kill:
             sprite_manager.add_sprite(ExplosionAnimation(tuple(self.pos)))
 
-    def move(self, game_manager: GameManager):
+    def move(self, game_manager: GameManager.GameManager):
         if not self.dir == "drown":
             diff = 50 - self.move_count
             if self.dir == "u":
@@ -144,3 +145,4 @@ class Enemy(Sprite):
 
                 if game_manager.get_layout()[int(self.coords[1])][int(self.coords[0])] == "W":
                     self.set_drown()
+                    game_manager.set_layout_solid_at(int(self.coords[1]), int(self.coords[0]))

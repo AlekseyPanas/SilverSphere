@@ -14,8 +14,7 @@ class RenderData:
     """
     z_order: float
     surf: pygame.Surface
-    pos: tuple[int, int]
-    is_top_left: bool
+    rect: pygame.Rect
 
     def __eq__(self, other): return False
     def __lt__(self, other): return True
@@ -35,9 +34,4 @@ class ZHeapRenderer:
         while len(self.__surface_heap):
             z, rend_dat = heapq.heappop(self.__surface_heap)
 
-            if rend_dat.is_top_left:
-                r = rend_dat.surf.get_rect(topleft=rend_dat.pos)
-            else:
-                r = rend_dat.surf.get_rect(center=rend_dat.pos)
-
-            game_surf.blit(rend_dat.surf, r, special_flags=pygame.BLEND_ALPHA_SDL2)
+            game_surf.blit(rend_dat.surf, rend_dat.rect, special_flags=pygame.BLEND_ALPHA_SDL2)

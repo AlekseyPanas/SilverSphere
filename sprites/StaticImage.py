@@ -19,6 +19,6 @@ class StaticImage(Sprite):
 
     def render(self, menu: Menu, game_manager: GameManager.GameManager,
                sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
-        return RenderData(self.z_order, self.__image, self.__topleft, True)
+        return RenderData(self.z_order, self.__image, self.__image.get_rect(topleft=self.__topleft))
 
     def get_shadow(self) -> pygame.Surface | None: return None

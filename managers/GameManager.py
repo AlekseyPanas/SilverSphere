@@ -41,9 +41,12 @@ class GameManager(Manager):
     GRID_PIXELS_Y = TILE_SIZE * GRID_SIZE_Y
     GRID_PIXELS = (GRID_PIXELS_X, GRID_PIXELS_Y)
 
+    TICKS_UNTIL_RESET = 50
+
     def __init__(self, menu: Menu, level_idx: int = 0):
         super().__init__(menu)
         # JSON level data
+        self.__level_idx = level_idx
         self.__level_json = menu.get_level_json_at_index(level_idx)  # dictionary of level object (see levels.json)
         self.__layout = copy.deepcopy(self.__level_json["layout"])
 
@@ -57,11 +60,14 @@ class GameManager(Manager):
         self.__time_left = self.__level_json["time"]
         self.__state = GameStates.NOT_STARTED
         self.__explosion_generated = False  # Flag to spawn explosion when time runs out
+        self.__gameover = False  # Flag set to indicate level was lost
+        self.__reset_timer = 0  # Tick-based timer used to reset the level after loss
+        self.__score_gain = 0  # Store score gain after completing level
 
         # Asset generation
         self.__exit_button = Button(Constants.cscale(550, 640), Constants.cscale(50, 50), self.EXIT_ICON_IMAGE, state_quantity=2)
         self.__play_button = Button(Constants.cscale(425, 440), Constants.cscale(180, 60), self.INLEVEL_PLAY_BUTTON_IMAGE, state_quantity=2)
-        self.__next_level_button = Button(Constants.cscale(55, 480), Constants.cscale(180, 60), self.NEXTLVL_BUTTON_IMAGE, state_quantity=2)
+        self.__next_level_button = Button(Constants.cscale(425, 480), Constants.cscale(180, 60), self.NEXTLVL_BUTTON_IMAGE, state_quantity=2)
         self.__pre_level_popup_surf = self.__generate_pre_popup()
         self.__post_level_popup_surf = self.__generate_post_popup()
 
@@ -82,25 +88,40 @@ class GameManager(Manager):
         self.__layout[row][col] = "S"
 
     def run(self, screen: pygame.Surface, menu: Menu.Menu):
+        # Level reset timer
+        if self.__gameover:
+            self.__reset_timer += 1
+        if self.__reset_timer > self.TICKS_UNTIL_RESET:
+            menu.switch_state(Menu.MenuStates.GAME, {"level_idx": self.__level_idx})
+
         # Button events
         for event in menu.events:
             if event.type == pygame.MOUSEBUTTONUP:
                 if self.__exit_button.is_clicked(event.pos):
                     menu.switch_state(Menu.MenuStates.MAIN)
+
                 elif self.__state == GameStates.NOT_STARTED and self.__play_button.is_clicked(event.pos):
                     self.__state = GameStates.IN_GAME
                     self.__start_time = copy.copy(time.time())
+
                 elif self.__state == GameStates.WON and self.__next_level_button.is_clicked(event.pos):
-                    pass
+                    menu.score += self.__score_gain
+                    menu.completed[self.__level_json["id"] - 1] = True
+                    if self.__level_json["id"] + 1 > len(menu.levels):
+                        menu.switch_state(Menu.MenuStates.MAIN)
+                    else:
+                        menu.switch_state(Menu.MenuStates.GAME, {"level_idx": self.__level_idx + 1})
+                    menu.save_game()
 
         if self.__state == GameStates.IN_GAME:
-
             # Update all sprites
             for s in self.__sprites_manager.get_all_sprites():
                 s.update(menu, self, self.__sprites_manager)
 
             # Run level logic
-            self.__run_level_logic(menu)
+            if not self.__gameover and not self.vortex.player_in:
+                self.__level_time_and_death_logic()
+            self.__level_vortex_condition_logic(menu)
 
         # Flush manager. The sprites aren't added until flushed
         self.__sprites_manager.flush_all()
@@ -116,6 +137,12 @@ class GameManager(Manager):
         elif self.__state == GameStates.WON:
             screen.blit(self.__post_level_popup_surf, self.__post_level_popup_surf.get_rect(center=(Constants.SCREEN_SIZE[0] / 2, Constants.SCREEN_SIZE[1] / 2)))
             self.__next_level_button.draw_and_hover(screen, pygame.mouse.get_pos())
+
+            rendered_text = Constants.get_sans(Constants.cscale(36, divisors=(1030,))).render(str(self.__score_gain), True, (0, 0, 0))
+            self.__post_level_popup_surf.blit(rendered_text, Constants.cscale(15, 190))
+
+            rendered_text = Constants.get_sans(Constants.cscale(36, divisors=(1030,))).render(str(menu.score + self.__score_gain), True, (0, 0, 0))
+            self.__post_level_popup_surf.blit(rendered_text, Constants.cscale(15, 300))
 
     def __render_level(self, menu: Menu.Menu):
         """Render every sprite and push to renderer class. Then render whole frame onto game screen"""
@@ -160,7 +187,7 @@ class GameManager(Manager):
 
     def do_persist(self) -> bool: return False
 
-    def __run_level_logic(self, menu: Menu.Menu):
+    def __level_time_and_death_logic(self):
         """Core level logic for sprites, not including menus"""
         # Counts timer and resets game if time runs out
         time_current = time.time()
@@ -170,8 +197,13 @@ class GameManager(Manager):
             self.player.kill = True
             if not self.__explosion_generated:
                 self.__sprites_manager.add_sprite(ExplosionAnimation(self.player.pos))
-            self.__explosion_generated = True
+                self.__explosion_generated = True
 
+        if self.player.state == "drown" or (self.player.kill and (not self.vortex.player_in)):
+            self.__gameover = True
+
+    def __level_vortex_condition_logic(self, menu: Menu.Menu):
+        """Determines if the level satisfies the conditions for the vortex to be opened"""
         # Detects if all X marks are satisfied. open_exit initially set to false
         self.open_exit = False
         # temporary array to report the status of each x mark
@@ -205,12 +237,16 @@ class GameManager(Manager):
 
         # controls animations with vortex
         vortex: Vortex = self.__sprites_manager.get_single(Vortex)
-        if self.open_exit and vortex.state == 'blank':
+        if self.open_exit and vortex.state == 'blank' and (not vortex.player_in):
             vortex.set_image = False
             vortex.state = 'open'
         elif not self.open_exit and vortex.state == 'stationary':
             vortex.set_image = False
             vortex.state = 'close'
+
+        if vortex.player_in and vortex.state == "blank":
+            self.__state = GameStates.WON
+            self.__score_gain = (self.__time_left * 100) if not menu.completed[self.__level_json["id"] - 1] else 0
 
     def __generate_pre_popup(self) -> pygame.Surface:
         # LOADS POPUP FOR PRE LEVEL
@@ -260,50 +296,3 @@ class GameManager(Manager):
         post_level_popup_surf.blit(rendered_text, (15, 270))
 
         return pygame.transform.smoothscale(post_level_popup_surf, Constants.cscale(250, 450)).convert_alpha()
-
-# TODO: Game-menu code
-
-# self.game = None
-#
-# # Used to count when game is over or level is completed
-# self.reset_counter = 0
-
-# elif self.menu_state == 'game':
-#     self.game.run_level(screen)
-#
-#     if self.game.reset:
-#         self.reset_counter += 1
-#
-#         if self.reset_counter > 50:
-#             self.reset_counter = 0
-#             self.start_game(self.game.json["id"] - 1)
-#
-#     elif self.game.complete:
-#         self.score += (self.game.time_diff * 100) if not self.completed[self.game.json["id"] - 1] else 0
-#         self.completed[self.game.json["id"] - 1] = True
-#         self.levelselect_buttons[self.game.json["id"] - 1].set_colors(border_color=(0, 255, 0))
-#         if self.game.json["id"] + 1 > len(self.levels):
-#             Constants.BIRTHDAY = True
-#             self.menu_state = "main"
-#         else:
-#             self.start_game(self.game.json["id"])
-#         self.__save_game()
-
-# Draws post-level menu
-# screen.blit(self.post_level_popup_surf, self.post_level_popup_surf.get_rect(
-#     center=Constants.cscale(160, 330)))
-#
-# score_gain = self.time_diff * 100 if not Globe.MENU.completed[self.json["id"] - 1] else 0
-#
-# rendered_text = Constants.get_sans(Constants.cscale(36, divisors=(1030,))).render(str(score_gain), True, (0, 0, 0))
-# self.post_level_popup_surf.blit(rendered_text, Constants.cscale(15, 190))
-#
-# rendered_text = Constants.get_sans(Constants.cscale(36, divisors=(1030,))).render(str(Globe.MENU.score + score_gain), True, (0, 0, 0))
-# self.post_level_popup_surf.blit(rendered_text, Constants.cscale(15, 300))
-#
-# self.next_level_button.draw(screen)
-# self.next_level_button.is_hover(pygame.mouse.get_pos())
-# for event in Globe.events:
-#     if event.type == pygame.MOUSEBUTTONUP:
-#         if self.next_level_button.is_clicked(event.pos):
-#             self.complete = True

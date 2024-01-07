@@ -55,6 +55,8 @@ class MenuScreenLevelSelectManager(MenuScreenManager):
 
         for idx, button in enumerate(self.levelselect_buttons):
             # Draws buttons
+            if menu.completed[idx]:
+                button.set_colors(border_color=(0, 255, 0))
             button.draw(screen)
             button.is_hover(pygame.mouse.get_pos())
             if not idx == 0:

@@ -28,7 +28,8 @@ class AnimationEffect(Sprite):
 
     def render(self, menu: Menu, game_manager: GameManager.GameManager,
                sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
-        return RenderData(self.z_order, self.__frames[self.__idx], cscale(*self.__world_center), False)
+        s = self.__frames[self.__idx]
+        return RenderData(self.z_order, s, s.get_rect(center=cscale(*self.__world_center)))
 
     def get_shadow(self) -> pygame.Surface | None: return None
 

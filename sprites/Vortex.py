@@ -6,6 +6,8 @@ import Menu
 from game.Renderers import RenderData
 from managers.Managers import PreAsset, ASSET_LOADER, register_assets
 from sprites.Sprite import Sprite
+from sprites import Box
+from sprites.AnimationEffect import ExplosionAnimation
 from managers import GameManager
 from game import SpritesManager
 
@@ -34,6 +36,9 @@ class Vortex(Sprite):
 
         # run once variable to set image
         self.set_image = False
+
+        # Flag set to true when player entered portal to indicate no looping
+        self.player_in = False
 
         # animation variables   frames, and animation speed
         self.time = 0
@@ -66,12 +71,12 @@ class Vortex(Sprite):
                 self.animation_speed = 0.28
                 self.time = 0
 
-            # FIX THIS: Checks for boxes on open vortex and sets them to explode
-            # for box in sprite_manager.get_group(Box):
-            #     if box.coords == self.coords:
-            #         box.kill = True
-            #         sprite_manager.add_sprite(Animation(-1, 12, {}, (9, 9), 1, Constants.EXPLOSION_IMAGE,
-            #                                              Constants.cscale(*box.pos), 74))
+            # Checks for boxes on open vortex and sets them to explode
+            for box in sprite_manager.get_groups([Box.Box, Box.IceCube]):
+                box: Box
+                if box.coords == self.coords:
+                    box.kill = True
+                    sprite_manager.add_sprite(ExplosionAnimation(box.pos))
 
         else:
             self.current_image = None
@@ -96,6 +101,7 @@ class Vortex(Sprite):
                sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
         if self.state == "blank" or self.current_image is None:
             return None
-        return RenderData(self.z_order, self.current_image[self.current_index], Constants.cscale(*self.pos), False)
+        s = self.current_image[self.current_index]
+        return RenderData(self.z_order, s, s.get_rect(center=Constants.cscale(*self.pos)))
 
     def get_shadow(self) -> pygame.Surface | None: return None

@@ -36,7 +36,7 @@ class Box(Sprite):
 
     def render(self, menu: Menu, game_manager: GameManager.GameManager,
                sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
-        return RenderData(self.z_order, self.BOX_IMAGE, tuple(cscale(*self.pos)), False)
+        return RenderData(self.z_order, self.BOX_IMAGE, self.BOX_IMAGE.get_rect(center=tuple(cscale(*self.pos))))
 
     def get_shadow(self) -> pygame.Surface | None:
         return None
@@ -144,7 +144,7 @@ class Box(Sprite):
 class IceCube(Box):
     def render(self, menu: Menu, game_manager: GameManager.GameManager,
                sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
-        return RenderData(self.z_order, self.ICE_IMAGE, cscale(*self.pos), False)
+        return RenderData(self.z_order, self.ICE_IMAGE, self.ICE_IMAGE.get_rect(center=cscale(*self.pos)))
 
     def move(self, game_manager: GameManager.GameManager, sprite_manager: SpritesManager.GroupSpritesManager):
         # If any directional state is the current state, then run the code
