@@ -10,6 +10,8 @@ from Constants import spritesheet2frames, path2asset
 import Constants
 from managers import GameManager
 from game import SpritesManager
+import math
+import time
 
 
 @register_assets(ASSET_LOADER)
@@ -35,6 +37,8 @@ class Player(Sprite):
         :param coords: player start position
         """
         super().__init__(lifetime, z_order)
+
+        self.__zorder_copy = self.z_order
 
         # position and grid coords
         self.coords = coords
@@ -99,15 +103,27 @@ class Player(Sprite):
 
     def render(self, menu: Menu, game_manager: GameManager.GameManager,
                sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
+        s: pygame.Surface | None = None
+
         # When stationary
         if self.state == "static" or self.state == 'drown':
-            return RenderData(self.z_order, self.image, self.image.get_rect(center=Constants.cscale(*self.pos)))
+            s = self.image
 
         # moving animation
         if self.state == "r" or self.state == "l" or self.state == "u" or self.state == "d":
             s = self.current_image[self.current_index]
-            return RenderData(self.z_order, s,
-                              s.get_rect(center=Constants.cscale(*self.pos)))
+
+        return RenderData(self.z_order, self.get_drown_scale(self.z_order, s),
+                          s.get_rect(center=Constants.cscale(*self.pos)))
+
+    @staticmethod
+    def get_drown_scale(zorder: float, surf: pygame.Surface):
+        """If in water, return scaled surface based on zorder"""
+        # Ball gets slightly smaller if drowned
+        if zorder < ZHeights.ON_GROUND_OBJECT_HEIGHT:
+            diff = (ZHeights.ON_GROUND_OBJECT_HEIGHT - zorder) / 15
+            return pygame.transform.smoothscale(surf, tuple(i * (1 - (diff * 0.5)) for i in surf.get_size()))
+        return surf
 
     def get_shadow(self) -> tuple[pygame.Surface, tuple[float, float]] | None:
         return self.BALL_SHADOW_IMAGE.copy(), (self.pos[0] + self.SHADOW_SHIFT[0], self.pos[1] + self.SHADOW_SHIFT[1])
@@ -116,6 +132,9 @@ class Player(Sprite):
         if self.state == "r" or self.state == "l" or self.state == "u" or self.state == "d":
             self.current_index = int((self.time % (6 * self.__num_frames)) // 6)
             self.time += 0.95 * (self.ANIM_INTERMEDIATES + 1)
+
+        # # For water shadow testing
+        # self.z_order = self.__zorder_copy + 3 + 3 * math.sin(time.time())
 
     def event_handler(self, menu: Menu):
         """Keeps track of user inputs"""

@@ -60,6 +60,9 @@ class LevelGenerator:
 
         # Add shadow managers
         sprite_manager.add_sprite(WaterShadowManager(ZHeights.WATER_SHADOW_HEIGHT, water_shadow))
+        # test_white_surf = pygame.Surface(cscale(1000, 600))  # Adds a white surface for debugging
+        # test_white_surf.fill((255, 255, 255))
+        # sprite_manager.add_sprite(StaticImage(None, 99, test_white_surf))
         sprite_manager.add_sprite(GroundShadowManager(ZHeights.GROUND_SHADOW_HEIGHT, grid_clipper, ground_shadow))
 
     def __generate_grid(self) -> tuple[pygame.Surface, pygame.Surface, pygame.Mask, pygame.Surface, pygame.Surface]:
@@ -68,8 +71,9 @@ class LevelGenerator:
 
         tile_surf = pygame.Surface((1000, 600), pygame.SRCALPHA, 32)
         metal_surf = pygame.Surface((1000, 600), pygame.SRCALPHA, 32)
+
         water_shadow_surf = pygame.mask.Mask(cscale(1000, 600))
-        metal_ground_shadow_surf = pygame.Surface((1000, 600), pygame.SRCALPHA, 32)
+        metal_ground_shadow_surf = pygame.Mask(cscale(1000, 600))  # Used to prevent overlapping metal box shadows
 
         # Draws the ground_layout
         grid_position = [0, 0]
@@ -80,9 +84,10 @@ class LevelGenerator:
                     water_shadow_surf.draw(pygame.mask.from_surface(self.SHADOW_GROUND_TILE), cscale(*grid_position))
                 elif tile == "B":
                     metal_surf.blit(self.IRON_TILE_IMAGE, grid_position)
-                    water_shadow_surf.draw(pygame.mask.from_surface(Box.SHADOW_BOX, 5),
-                                           cscale(grid_position[0] + 12, grid_position[1] + 8))
-                    metal_ground_shadow_surf.blit(Box.SHADOW_BOX, grid_position)
+
+                    box_mask = pygame.mask.from_surface(Box.SHADOW_BOX, 5)
+                    water_shadow_surf.draw(box_mask, cscale(grid_position[0] + 12, grid_position[1] + 8))
+                    metal_ground_shadow_surf.draw(box_mask, cscale(*grid_position))
                 grid_position[0] += 50
             grid_position[1] += 50
             grid_position[0] = 0
@@ -98,5 +103,5 @@ class LevelGenerator:
         tile_surf = pygame.transform.smoothscale(tile_surf, cscale(1000, 600)).convert_alpha()
         metal_surf = pygame.transform.smoothscale(metal_surf, cscale(1000, 600)).convert_alpha()
 
-        return tile_surf, metal_surf, water_shadow_surf, grid_clipper, \
-            pygame.transform.smoothscale(metal_ground_shadow_surf, cscale(1000, 600)).convert_alpha()
+        return tile_surf, metal_surf, water_shadow_surf, grid_clipper, metal_ground_shadow_surf.to_surface(setcolor=(0, 0, 0, 50), unsetcolor=(0, 0, 0, 0))
+

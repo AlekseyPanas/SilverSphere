@@ -86,9 +86,10 @@ class Menu:
             self.__managers[self.menu_state.value] = clss(self, **{k: self.__switch_params[k] for k in self.__switch_params if k in list(inspect.signature(clss).parameters.keys())})
             self.__switch_params = dict()
 
-    def handle_exit(self):
+    def handle_exit(self, *args, **kwargs):
         """Called when main loop finishes under any circumstances"""
         self.save_game()
+        self.__running = False
 
     def stop_game(self):
         """Set flag to stop game on next loop iteration"""

@@ -66,7 +66,8 @@ class Enemy(Sprite):
     def render(self, menu: Menu, game_manager: GameManager.GameManager,
                sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
         s = self.current_image[self.__current_index]
-        return RenderData(self.z_order, s, s.get_rect(center=tuple(Constants.cscale(*self.pos))))
+        return RenderData(self.z_order, Player.get_drown_scale(self.z_order, s),
+                          s.get_rect(center=tuple(Constants.cscale(*self.pos))))
 
     def get_shadow(self) -> tuple[pygame.Surface, tuple[float, float]] | None:
         return Player.BALL_SHADOW_IMAGE.copy(), (self.pos[0] + Player.SHADOW_SHIFT[0], self.pos[1] + Player.SHADOW_SHIFT[1])

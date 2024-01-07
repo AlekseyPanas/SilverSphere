@@ -40,10 +40,11 @@ This version is still in development; changelog is subject to change.
 Changes
 - [x] Extensive refactoring of entire codebase
 - [ ] Shadows:
-  - [ ] Added separate shadows for water and land
-  - [ ] Added box, metal box, and ball water and land shadows
-  - [ ] Added land shadow clipping
+  - [X] Added separate shadows for water and land
+  - [X] Added box, metal box, and ball water and land shadows
+  - [X] Added land shadow clipping
   - [ ] Shadows scale and move based on z-coordinate
+  - [ ] Added ambient tree shadows like in original game
 - [ ] Added white flash animation for ball spawning at level start
 - [ ] Drowned spheres get smaller with an animation
 - [ ] Added splash effect for objects dropped in water

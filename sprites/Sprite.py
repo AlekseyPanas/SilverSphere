@@ -16,8 +16,8 @@ class ZHeights:
     UNDERWATER_OBJECT_HEIGHT = 1.0
     WATER_HEIGHT = 1.01
     GROUND_HEIGHT = 1.5
+    X_HEIGHT = 1.5001
     GROUND_SHADOW_HEIGHT = 1.501
-    X_HEIGHT = 1.7
     ON_GROUND_OBJECT_HEIGHT = 2.5
     EXPLOSION_HEIGHT = 3
 
@@ -58,5 +58,5 @@ class Sprite:
     def get_shadow(self) -> tuple[pygame.Surface, tuple[float, float]] | None:
         """Return None if this object casts no shadow. Otherwise, return a Surface
         which represents the shadow this object would cast if it was directly on the
-        ground. The shadow surface returned should be properly scaled. Also return
+        ground. The shadow surface returned should be resolution-scaled. Also return
         topleft corner in world coordinates"""

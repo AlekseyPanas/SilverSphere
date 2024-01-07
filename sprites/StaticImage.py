@@ -11,6 +11,12 @@ from game import SpritesManager
 
 class StaticImage(Sprite):
     def __init__(self, lifetime: int | None, z_order: float, image: pygame.Surface, topleft=(0, 0)):
+        """
+        :param lifetime:
+        :param z_order:
+        :param image: Provided in resolution-scaled size
+        :param topleft: Provided in resolutuion-scaled coordinates
+        """
         super().__init__(lifetime, z_order)
         self.__image = image
         self.__topleft = topleft
