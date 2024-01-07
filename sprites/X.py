@@ -14,6 +14,7 @@ from game import SpritesManager
 class X_Box_Tile(Sprite):
     ICE_X_TILE_IMAGE: pygame.Surface = PreAsset(path2asset("images/Xice.png"), (63, 63))
     BOX_X_TILE_IMAGE: pygame.Surface = PreAsset(path2asset("images/Xbox.png"), (63, 63))
+    SHADOW_X: pygame.Surface = PreAsset(path2asset("images/x_shadow.png"), (58, 53))
 
     def __init__(self, lifetime: int | None, z_order: float, coords):
         super().__init__(lifetime, z_order)
@@ -27,7 +28,8 @@ class X_Box_Tile(Sprite):
                sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
         return RenderData(self.z_order, self.BOX_X_TILE_IMAGE, self.BOX_X_TILE_IMAGE.get_rect(center=Constants.cscale(*self.pos)))
 
-    def get_shadow(self) -> pygame.Surface | None: return None
+    def get_shadow(self) -> tuple[pygame.Surface, tuple[float, float]] | None:
+        return self.SHADOW_X, (self.pos[0] - 20, self.pos[1] - 24)
 
 
 class X_Ice_Tile(X_Box_Tile):

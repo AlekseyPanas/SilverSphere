@@ -52,7 +52,7 @@ class Menu:
         self.__is_switched = False  # Indicates that state has been changed
 
     def __load_player_data(self):
-        with open("data.json", "r") as file:
+        with open(Constants.path2file("data.json"), "r") as file:
             loaded = json.load(file)
             if not loaded["highest"] == -1:
                 for x in range(loaded["highest"] + 1):
@@ -60,14 +60,14 @@ class Menu:
             self.score = loaded["score"]
 
     def __load_levels(self):
-        with open("level.json", "r") as file:
+        with open(Constants.path2file("level.json"), "r") as file:
             self.levels = json.load(file)
 
     def get_level_json_at_index(self, idx: int) -> dict:
         return self.levels[idx]
 
     def save_game(self):
-        with open("data.json", "w") as file:
+        with open(Constants.path2file("data.json"), "w") as file:
             completed = len([x for x in self.completed if x]) - 1
             json.dump({"highest": completed, "score": self.score}, file)
 

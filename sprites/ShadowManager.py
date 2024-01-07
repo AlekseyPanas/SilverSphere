@@ -7,6 +7,7 @@ from game.Renderers import RenderData
 from managers import GameManager
 from sprites.Sprite import Sprite, ZHeights
 from sprites import Box
+from sprites import X, Vortex
 from abc import abstractmethod
 
 
@@ -56,6 +57,23 @@ class GroundShadowManager(ShadowManager):
         return RenderData(self.z_order, surf, surf.get_rect(topleft=(0, 0)))
         #return RenderData(100, self.__clipper, surf.get_rect(topleft=(0, 0)))
         #return RenderData(100, self.__base_shadow, surf.get_rect(topleft=(0, 0)))
+
+
+class FlatGroundShadowManager(GroundShadowManager):
+    """Wrapper to only draw shadows for X and Vortex"""
+    def __init__(self, z_order: float, scaled_inverse_surface: pygame.Surface):
+        super().__init__(z_order, scaled_inverse_surface, pygame.Surface(Constants.cscale(1000, 600), pygame.SRCALPHA, 32))
+
+    def register_shadow(self, sprite: Sprite):
+        if isinstance(sprite, X.X_Box_Tile) or isinstance(sprite, Vortex.Vortex):
+            super().register_shadow(sprite)
+
+
+class TallGroundShadowManager(GroundShadowManager):
+    """Shadows for boxes and balls"""
+    def register_shadow(self, sprite: Sprite):
+        if not isinstance(sprite, X.X_Box_Tile) and not isinstance(sprite, Vortex.Vortex):
+            super().register_shadow(sprite)
 
 
 class WaterShadowManager(ShadowManager):

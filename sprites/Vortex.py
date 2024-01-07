@@ -18,6 +18,7 @@ class Vortex(Sprite):
     VORTEX_TILE_IMAGE: pygame.Surface = PreAsset(path2asset("images/vortex anim.png"), (770, 70))
     VORTEX_OPEN_IMAGE: pygame.Surface = PreAsset(path2asset("images/vortex open.png"), (630, 70))
     VORTEX_CLOSE_IMAGE: pygame.Surface = PreAsset(path2asset("images/vortex close.png"), (630, 70))
+    SHADOW_VORTEX: pygame.Surface = PreAsset(path2asset("images/vortex_shadow.png"), (70, 60))
 
     def __init__(self, lifetime: int | None, z_order: float, coords: tuple[int, int]):
         super().__init__(lifetime, z_order)
@@ -104,4 +105,7 @@ class Vortex(Sprite):
         s = self.current_image[self.current_index]
         return RenderData(self.z_order, s, s.get_rect(center=Constants.cscale(*self.pos)))
 
-    def get_shadow(self) -> pygame.Surface | None: return None
+    def get_shadow(self) -> tuple[pygame.Surface, tuple[float, float]] | None:
+        if self.state != "blank":
+            return self.SHADOW_VORTEX, (self.pos[0] - 23, self.pos[1] - 21)
+        return None

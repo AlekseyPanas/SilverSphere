@@ -36,28 +36,29 @@ Additional features in mind by planned version
 This version is still in development; changelog is subject to change.
 
 Changes
-- Visual Effects
-  - [ ] Shadows:
-    - [X] Added separate shadows for water and land
-    - [ ] Added box, metal box, ball, X, and Vortex water and land shadows
-    - [X] Added land shadow clipping
-    - [X] Shadows scale and move based on z-coordinate
-    - [ ] Added ambient tree shadows like in original game
-  - [X] Drowned spheres get smaller with an animation
-  - [x] Added splash effect for objects dropped in water
+- Visuals
+  - Shadows:
+    - Added separate shadows for water and land
+    - Added box, metal box, ball, X, and Vortex water and land shadows
+    - Added land shadow clipping
+    - Shadows scale and move based on z-coordinate
+    - Added ambient tree shadows like in original game
+  - Drowned spheres get smaller with an animation
+  - Added splash effect for objects dropped in water
+  - Designed new original metal box asset
 - Game
   - [ ] Added custom level editor
-  - [x] Drowned enemy spheres now act as platforms
+  - Drowned enemy spheres now act as platforms
 - Bug Fixes
-  - [x] Fixed X tiles drawn above metal boxes
-  - [x] Fixed ball clipping slightly into pushed boxes
-  - [x] Fixed relative paths breaking when executing script from another directory
-  - [x] Fixed broken collision radius under resolution changes
-  - [x] Fixed jittery open vortex animation
-  - [ ] Fixed libpng warning
+  - Fixed X tiles drawn above metal boxes
+  - Fixed ball clipping slightly into pushed boxes
+  - Fixed relative paths breaking when executing script from another directory
+  - Fixed broken collision radius under resolution changes
+  - Fixed jittery open vortex animation
+  - Fixed libpng warning
 - Other
-  - [x] Extensive refactoring of entire codebase
-  - [x] Added signal catching to prevent losing data when terminating game
+  - Extensive refactoring of entire codebase
+  - Added signal catching to prevent losing data when terminating game
 
 Bugs
 - If a level is beaten with a better time, no additional score is given

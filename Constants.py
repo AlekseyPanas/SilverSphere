@@ -12,11 +12,16 @@ SCREEN_SIZE = (1030, 700)
 #SCREEN_SIZE = (824, 560)
 #SCREEN_SIZE = (2060, 1400)
 
-ASSET_PATH = pathlib.Path(sys.argv[0]).parent.joinpath("assets")
+ROOT_PATH = pathlib.Path(sys.argv[0]).parent
+ASSET_PATH = ROOT_PATH.joinpath("assets")
 
 
 def path2asset(subpath: str):
     return ASSET_PATH.joinpath(pathlib.Path(subpath))
+
+
+def path2file(subpath_from_root: str):
+    return ROOT_PATH.joinpath(pathlib.Path(subpath_from_root))
 
 
 def distance(a, b):
@@ -66,6 +71,16 @@ def posscale(*coordinate, divisors=(1030, 700)):
 def scale_surfaces(surfs: list[pygame.Surface]):
     """Given multiple surfaces in WORLD coordinates (1030, 700), scale them to current resolution"""
     return [pygame.transform.smoothscale(s, cscale(*s.get_size())).convert_alpha() for s in surfs]
+
+
+def clipper_from_surface(surf: pygame.Surface, threshold=127) -> pygame.Surface:
+    """Return a surface which is white for all transparent pixels in surf, and transparent
+    where surf isn't. This is useful with RGBA_SUB blend mode to clip other surfaces to be
+    the shape of the provided surf
+    :param surf: Surface to get clipper of
+    :param threshold: alpha thresh to determine whether pixel is clipped or not
+    """
+    return pygame.mask.from_surface(surf, threshold).to_surface(setcolor=(0, 0, 0, 0), unsetcolor=(255, 255, 255, 255))
 
 
 def spritesheet2frames(spritesheet: pygame.Surface, frame_dims_xy: tuple[int, int],
@@ -134,7 +149,7 @@ def get_arial(size):
 
 
 def get_sans(size):
-    return pygame.font.Font(pathlib.Path(__file__).parent.joinpath("assets/BebasNeue-Regular.ttf"), size)
+    return pygame.font.Font(path2asset("fonts/BebasNeue-Regular.ttf"), size)
 
 
 BIGBOI_FONT = pygame.font.SysFont("Comic Sans", int(0.045 * SCREEN_SIZE[0]))

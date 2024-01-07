@@ -1,13 +1,10 @@
 from __future__ import annotations
 import pygame
-import Constants
-import copy
 import Menu
 from abc import abstractmethod
 from game.Renderers import RenderData
 from managers import GameManager
 from game import SpritesManager
-import enum
 
 
 class ZHeights:
@@ -17,10 +14,11 @@ class ZHeights:
     WATER_HEIGHT = 1.01
     WATER_SPLASH_HEIGHT = 1.02
     GROUND_HEIGHT = 1.5
+    FLAT_GROUND_SHADOW_HEIGHT = 1.50001
     X_HEIGHT = 1.5001
     GROUND_SHADOW_HEIGHT = 1.501
     ON_GROUND_OBJECT_HEIGHT = 2.5
-    EXPLOSION_HEIGHT = 3
+    EXPLOSION_HEIGHT = 3.0
 
 
 class Sprite:

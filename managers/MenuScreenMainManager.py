@@ -10,9 +10,9 @@ from Constants import path2asset
 
 @register_assets(ASSET_LOADER)
 class MenuScreenMainManager(MenuScreenManager):
-    PLAY_BUTTON: pygame.Surface = PreAsset(path2asset("menu_play_button.png"))
-    LEVEL_BUTTON: pygame.Surface = PreAsset(path2asset("menu_levels_button.png"))
-    QUIT_BUTTON: pygame.Surface = PreAsset(path2asset("menu_quit_button.png"))
+    PLAY_BUTTON: pygame.Surface = PreAsset(path2asset("images/menu_play_button.png"))
+    LEVEL_BUTTON: pygame.Surface = PreAsset(path2asset("images/menu_levels_button.png"))
+    QUIT_BUTTON: pygame.Surface = PreAsset(path2asset("images/menu_quit_button.png"))
     BUTTON_SIZE = (200, 67)
 
     def __init__(self, menu: Menu):
