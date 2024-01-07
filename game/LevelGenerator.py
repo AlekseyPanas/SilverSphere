@@ -49,9 +49,9 @@ class LevelGenerator:
         # Adds boxes
         for idx, box_pos in enumerate(self.__level_json["box_poses"]):
             if self.__level_json["box_types"][idx] == "ice":
-                sprite_manager.add_sprite(IceCube(None, 10, box_pos))
+                sprite_manager.add_sprite(IceCube(None, ZHeights.ON_GROUND_OBJECT_HEIGHT, box_pos))
             else:
-                sprite_manager.add_sprite(Box(None, 10, box_pos))
+                sprite_manager.add_sprite(Box(None, ZHeights.ON_GROUND_OBJECT_HEIGHT, box_pos))
 
         # Adds enemies
         for enemy in self.__level_json["enemies"]:

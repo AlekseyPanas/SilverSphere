@@ -29,7 +29,7 @@ class Vortex(Sprite):
         # Vortex animation images
         self.open = spritesheet2frames(self.VORTEX_OPEN_IMAGE, (9, 1))
         self.close = spritesheet2frames(self.VORTEX_CLOSE_IMAGE, (9, 1))
-        self.stationary = spritesheet2frames(self.VORTEX_TILE_IMAGE, (11, 1))
+        self.stationary = spritesheet2frames(self.VORTEX_TILE_IMAGE, (11, 1), 5)
 
         self.current_image = None
         self.current_index = 0
@@ -67,8 +67,8 @@ class Vortex(Sprite):
             if not self.set_image:
                 self.current_image = self.stationary
                 self.set_image = True
-                self.frames = 11
-                self.animation_speed = 0.28
+                self.frames = len(self.stationary)
+                self.animation_speed = 0.4 * 5
                 self.time = 0
 
             # Checks for boxes on open vortex and sets them to explode

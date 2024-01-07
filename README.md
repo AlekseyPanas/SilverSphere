@@ -28,9 +28,7 @@ Additional features in mind by planned version
 - Total score a sum of main level scores
 - Scores update when you beat a level with a better time / score
 #### v3.4
-- (Consider if this is even necessary) Add separate shadow layer for X 
-tiles so shadows are slightly above when cast onto them
-- Add water and land shadows for X tiles
+- Add white flash for ball spawning and ball vortex exiting
 
 ### Changelog
 
@@ -38,30 +36,42 @@ tiles so shadows are slightly above when cast onto them
 This version is still in development; changelog is subject to change.
 
 Changes
-- [x] Extensive refactoring of entire codebase
-- [ ] Shadows:
-  - [X] Added separate shadows for water and land
-  - [X] Added box, metal box, and ball water and land shadows
-  - [X] Added land shadow clipping
-  - [ ] Shadows scale and move based on z-coordinate
-  - [ ] Added ambient tree shadows like in original game
-- [ ] Added white flash animation for ball spawning at level start
-- [ ] Drowned spheres get smaller with an animation
-- [ ] Added splash effect for objects dropped in water
-- [ ] Added custom level editor
-- [x] Drowned enemy spheres now act as platforms
-- [x] Fixed X tiles drawn above metal boxes
-- [x] Fixed ball clipping slightly into pushed boxes
-- [x] Fixed relative paths breaking when executing script from another directory
-- [x] Fixed broken collision radius under resolution changes
+- Visual Effects
+  - [ ] Shadows:
+    - [X] Added separate shadows for water and land
+    - [ ] Added box, metal box, ball, X, and Vortex water and land shadows
+    - [X] Added land shadow clipping
+    - [X] Shadows scale and move based on z-coordinate
+    - [ ] Added ambient tree shadows like in original game
+  - [X] Drowned spheres get smaller with an animation
+  - [x] Added splash effect for objects dropped in water
+- Game
+  - [ ] Added custom level editor
+  - [x] Drowned enemy spheres now act as platforms
+- Bug Fixes
+  - [x] Fixed X tiles drawn above metal boxes
+  - [x] Fixed ball clipping slightly into pushed boxes
+  - [x] Fixed relative paths breaking when executing script from another directory
+  - [x] Fixed broken collision radius under resolution changes
+  - [x] Fixed jittery open vortex animation
+  - [ ] Fixed libpng warning
+- Other
+  - [x] Extensive refactoring of entire codebase
+  - [x] Added signal catching to prevent losing data when terminating game
 
 Bugs
 - If a level is beaten with a better time, no additional score is given
+- Enemy sprite animation is not using intermediates
 
 Issues
 - Direct cross-sprite mutation causes unpredictable behavior. 
 Add methods for so that sprite modifications are queued into the sprite and performed by that sprite
 in a second post-update loop
+- Intermediate animation frame generation is not very good at the moment.
+Furthermore, Animation in general should be somehow better organized rather than
+controlled by each sprite individually
+- Player and enemy have similar visuals in terms of animation, drowning, etc.
+Code should be extracted into a shared class rather than repeated
 
 #### v.2.0:
 Changes

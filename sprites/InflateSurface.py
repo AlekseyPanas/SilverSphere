@@ -7,6 +7,9 @@ from managers.Managers import PreAsset, AnimationPreAsset, ASSET_LOADER, registe
 from sprites.Sprite import Sprite, ZHeights
 from managers import GameManager
 from game import SpritesManager
+from enum import IntEnum
+import copy
+import random
 
 
 class InflateSurface:
@@ -64,6 +67,18 @@ class InflateSurfaceSprite(Sprite):
     """Thin wrapper to make an inflate surface a sprite object"""
     def __init__(self, lifetime: int | None, z_order: float, surface: pygame.Surface, start_scale: float, stop_scale: float,
                  scale_time: float, center: tuple[int, int], fade=False, initial_opacity=255, delay_inflation=0):
+        """
+        :param lifetime:
+        :param z_order:
+        :param surface: Surface to inflate
+        :param start_scale: Multiplicative factor of initial surface size to start with
+        :param stop_scale: Scale factor to end with
+        :param scale_time: Ticks to scale
+        :param center: resolution-scaled center position
+        :param fade: Should the surface fade out as it scales
+        :param initial_opacity: if fading, what opacity to start with (ends with full transparency)
+        :param delay_inflation: Ticks to delay the inflation
+        """
         super().__init__(lifetime, z_order)
         self.__inflate_surf = InflateSurface(z_order, surface, start_scale, stop_scale, scale_time, center, fade, initial_opacity, delay_inflation)
 
@@ -78,3 +93,90 @@ class InflateSurfaceSprite(Sprite):
         self.__inflate_surf.update()
         if self.__inflate_surf.opacity < 0:
             self.kill = True
+
+
+class SplashTypes(IntEnum):
+    SPHERE_SMALL = 0
+    SPHERE_BIG = 1
+    BOX_SMALL = 2
+    BOX_BIG = 3
+
+
+@register_assets(ASSET_LOADER)
+class SplashSphereSmall(InflateSurfaceSprite):
+    __rad = 120
+    __thickness = 20
+    __surf_dim = (__rad + __thickness) * 2
+    __surf = pygame.Surface((__surf_dim, __surf_dim), pygame.SRCALPHA, 32)
+    pygame.draw.circle(__surf, (255, 255, 255), (__surf_dim // 2, __surf_dim // 2), __rad, __thickness)
+    SPLASH: pygame.Surface = PreAsset(__surf, __surf.get_size())
+
+    def __init__(self, center: tuple[int, int]):
+        """
+        :param center: resolution-scaled center
+        """
+        super().__init__(None, ZHeights.WATER_SPLASH_HEIGHT, self.SPLASH, 0, 1, 40, center, fade=True, initial_opacity=150)
+
+
+@register_assets(ASSET_LOADER)
+class SplashSphereBig(InflateSurfaceSprite):
+    __rad = 160
+    __thickness = 15
+    __surf_dim = (__rad + __thickness) * 2
+    __surf = pygame.Surface((__surf_dim, __surf_dim), pygame.SRCALPHA, 32)
+    pygame.draw.circle(__surf, (255, 255, 255), (__surf_dim // 2, __surf_dim // 2), __rad, __thickness)
+    SPLASH: pygame.Surface = PreAsset(__surf, __surf.get_size())
+
+    def __init__(self, center: tuple[int, int]):
+        """
+        :param center: resolution-scaled center
+        """
+        super().__init__(None, ZHeights.WATER_SPLASH_HEIGHT, self.SPLASH, 0, 1, 30, center, fade=True, initial_opacity=150)
+
+
+@register_assets(ASSET_LOADER)
+class SplashBoxSmall(InflateSurfaceSprite):
+    __rad = 90
+    __thickness = 16
+    __surf_dim = (__rad + __thickness) * 2
+    __surf = pygame.Surface((__surf_dim, __surf_dim), pygame.SRCALPHA, 32)
+    pygame.draw.rect(__surf, (255, 255, 255), (__thickness, __thickness, __rad * 2, __rad * 2), __thickness, 70)
+    SPLASH: pygame.Surface = PreAsset(__surf, __surf.get_size())
+
+    def __init__(self, center: tuple[int, int]):
+        """
+        :param center: resolution-scaled center
+        """
+        super().__init__(None, ZHeights.WATER_SPLASH_HEIGHT, self.SPLASH, 0, 1, 40, center, fade=True, initial_opacity=150)
+
+
+@register_assets(ASSET_LOADER)
+class SplashBoxBig(InflateSurfaceSprite):
+    __rad = 130
+    __thickness = 13
+    __surf_dim = (__rad + __thickness) * 2
+    __surf = pygame.Surface((__surf_dim, __surf_dim), pygame.SRCALPHA, 32)
+    pygame.draw.rect(__surf, (255, 255, 255), (__thickness, __thickness, __rad * 2, __rad * 2), __thickness, 70)
+    SPLASH: pygame.Surface = PreAsset(__surf, __surf.get_size())
+
+    def __init__(self, center: tuple[int, int]):
+        """
+        :param center: resolution-scaled center
+        """
+        super().__init__(None, ZHeights.WATER_SPLASH_HEIGHT,
+                         pygame.transform.rotate(self.SPLASH, random.randint(-20, 20)),
+                         0, 1, 30, center, fade=True, initial_opacity=150)
+
+
+def get_splash(center: tuple[int, int], splash_type: SplashTypes):
+    match splash_type:
+        case SplashTypes.SPHERE_SMALL:
+            return SplashSphereSmall(center)
+        case SplashTypes.SPHERE_BIG:
+            return SplashSphereBig(center)
+        case SplashTypes.BOX_SMALL:
+            return SplashBoxSmall(center)
+        case SplashTypes.BOX_BIG:
+            return SplashBoxBig(center)
+        case _:
+            pass

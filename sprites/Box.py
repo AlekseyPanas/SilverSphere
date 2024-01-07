@@ -1,12 +1,14 @@
 from __future__ import annotations
 import pygame
 from Constants import path2asset, cscale
+import Constants
 import Menu
 from game.Renderers import RenderData
 from managers.Managers import PreAsset, ASSET_LOADER, register_assets
 from sprites.Sprite import Sprite, ZHeights
 from sprites.Vortex import Vortex
 from sprites import Player
+from sprites.InflateSurface import get_splash, SplashTypes
 from managers import GameManager
 from game import SpritesManager
 
@@ -34,6 +36,14 @@ class Box(Sprite):
     def update(self, menu: Menu, game_manager: GameManager.GameManager,
                sprite_manager: SpritesManager.GroupSpritesManager):
         self.move(game_manager, sprite_manager)
+
+        # Smooth drowning
+        if self.state == "drown" and self.z_order > ZHeights.UNDERWATER_OBJECT_HEIGHT:
+            self.z_order -= Constants.DROWN_SPEED
+            if self.z_order <= ZHeights.UNDERWATER_OBJECT_HEIGHT:
+                self.z_order = ZHeights.UNDERWATER_OBJECT_HEIGHT
+                sprite_manager.add_sprite(get_splash(Constants.cscale(*self.pos), SplashTypes.BOX_SMALL))
+                sprite_manager.add_sprite(get_splash(Constants.cscale(*self.pos), SplashTypes.BOX_BIG))
 
     def render(self, menu: Menu, game_manager: GameManager.GameManager,
                sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
@@ -96,7 +106,6 @@ class Box(Sprite):
 
     def set_drown(self):
         self.state = 'drown'
-        self.z_order = ZHeights.UNDERWATER_OBJECT_HEIGHT
 
     def post_detect(self, game_manager: GameManager.GameManager, sprite_manager: SpritesManager.GroupSpritesManager):
         # detects if on water, and if so, makes the box's state 'drown' and sets the map tile to 'S' so the player can

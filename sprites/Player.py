@@ -3,8 +3,9 @@ import pygame
 import Menu
 from game.Renderers import RenderData
 from sprites.Sprite import Sprite, ZHeights
-from sprites.Box import Box, IceCube
+from sprites import Box
 from sprites.Vortex import Vortex
+from sprites.InflateSurface import get_splash, SplashTypes
 from managers.Managers import PreAsset, AnimationPreAsset, ASSET_LOADER, register_assets
 from Constants import spritesheet2frames, path2asset
 import Constants
@@ -37,8 +38,6 @@ class Player(Sprite):
         :param coords: player start position
         """
         super().__init__(lifetime, z_order)
-
-        self.__zorder_copy = self.z_order
 
         # position and grid coords
         self.coords = coords
@@ -101,6 +100,14 @@ class Player(Sprite):
         # Moving function called continuously
         self.move(game_manager, sprite_manager)
 
+        # Smooth drowning
+        if self.state == "drown" and self.z_order > ZHeights.UNDERWATER_OBJECT_HEIGHT:
+            self.z_order -= Constants.DROWN_SPEED
+            if self.z_order <= ZHeights.UNDERWATER_OBJECT_HEIGHT:
+                self.z_order = ZHeights.UNDERWATER_OBJECT_HEIGHT
+                sprite_manager.add_sprite(get_splash(Constants.cscale(*self.pos), SplashTypes.SPHERE_SMALL))
+                sprite_manager.add_sprite(get_splash(Constants.cscale(*self.pos), SplashTypes.SPHERE_BIG))
+
     def render(self, menu: Menu, game_manager: GameManager.GameManager,
                sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
         s: pygame.Surface | None = None
@@ -122,11 +129,12 @@ class Player(Sprite):
         # Ball gets slightly smaller if drowned
         if zorder < ZHeights.ON_GROUND_OBJECT_HEIGHT:
             diff = (ZHeights.ON_GROUND_OBJECT_HEIGHT - zorder) / 15
-            return pygame.transform.smoothscale(surf, tuple(i * (1 - (diff * 0.5)) for i in surf.get_size()))
+            return pygame.transform.smoothscale(surf, tuple(i * (1 - (diff * 0.4)) for i in surf.get_size()))
         return surf
 
     def get_shadow(self) -> tuple[pygame.Surface, tuple[float, float]] | None:
-        return self.BALL_SHADOW_IMAGE.copy(), (self.pos[0] + self.SHADOW_SHIFT[0], self.pos[1] + self.SHADOW_SHIFT[1])
+        return self.get_drown_scale(self.z_order, self.BALL_SHADOW_IMAGE.copy()), \
+            (self.pos[0] + self.SHADOW_SHIFT[0], self.pos[1] + self.SHADOW_SHIFT[1])
 
     def animate(self):
         if self.state == "r" or self.state == "l" or self.state == "u" or self.state == "d":
@@ -134,7 +142,7 @@ class Player(Sprite):
             self.time += 0.95 * (self.ANIM_INTERMEDIATES + 1)
 
         # # For water shadow testing
-        # self.z_order = self.__zorder_copy + 3 + 3 * math.sin(time.time())
+        #self.z_order = self.__zorder_copy + 3 + 3 * math.sin(time.time())
 
     def event_handler(self, menu: Menu):
         """Keeps track of user inputs"""
@@ -236,7 +244,7 @@ class Player(Sprite):
         # Detects boxes that aren't in the water
         # If the box is not able to be pushed in a certain direction
         # (box.detect() returns that info) then allowed movement is set to false for that direction
-        for box in sprite_manager.get_groups([Box, IceCube]):
+        for box in sprite_manager.get_groups([Box.Box, Box.IceCube]):
             if not box.state == 'drown':
                 box_detect = box.detect(game_manager, sprite_manager)
                 if allowed_movement[0] and box.coords == [self.coords[0] + 1, self.coords[1]]:
@@ -262,7 +270,6 @@ class Player(Sprite):
 
     def set_drown(self):
         self.state = 'drown'
-        self.z_order = ZHeights.UNDERWATER_OBJECT_HEIGHT
 
     def post_detect(self, game_manager: GameManager.GameManager, sprite_manager: SpritesManager.GroupSpritesManager):
         vortex: Vortex = sprite_manager.get_single(Vortex)

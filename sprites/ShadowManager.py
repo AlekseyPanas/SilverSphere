@@ -6,6 +6,7 @@ from game import SpritesManager
 from game.Renderers import RenderData
 from managers import GameManager
 from sprites.Sprite import Sprite, ZHeights
+from sprites import Box
 from abc import abstractmethod
 
 
@@ -35,6 +36,13 @@ class GroundShadowManager(ShadowManager):
         if height_diff >= 0:
             surf, world_topleft = sprite.get_shadow()
             self.__cur_shadow.blit(surf, Constants.cscale(*world_topleft))
+
+        # TODO: Hacky way of updating ground clipping. Keep in mind that this needs to happen even if the box decides
+        #   to have no shadow, in which case this method would not get called
+        if isinstance(sprite, Box.Box) and sprite.state == "drown":
+            sprite: Box.Box
+            pygame.draw.rect(self.__clipper, (0, 0, 0, 0),
+                             Constants.cscale(sprite.pos[0] - 25, sprite.pos[1] - 25, 50, 50))
 
     def update(self, menu: Menu, game_manager: GameManager.GameManager,
                sprite_manager: SpritesManager.GroupSpritesManager): pass
@@ -69,9 +77,9 @@ class WaterShadowManager(ShadowManager):
         surf, world_topleft = sprite.get_shadow()
         surf: pygame.Surface
 
-        scale_factor = height_diff * 0.01
-        shift_factor_x = height_diff * 2
-        shift_factor_y = height_diff * 2
+        scale_factor = (height_diff * 0.01) * 5
+        shift_factor_x = height_diff * 20
+        shift_factor_y = height_diff * 8
 
         surf = pygame.transform.smoothscale(surf, tuple(p * (1 + scale_factor) for p in surf.get_size()))
         self.__cur_mask.draw(pygame.mask.from_surface(surf, 5),

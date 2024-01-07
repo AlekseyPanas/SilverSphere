@@ -9,6 +9,7 @@ from sprites.Box import IceCube, Box
 from sprites.AnimationEffect import ExplosionAnimation
 from managers.Managers import PreAsset, AnimationPreAsset, ASSET_LOADER, register_assets
 from Constants import spritesheet2frames, path2asset, scale_surfaces
+from sprites.InflateSurface import get_splash, SplashTypes
 import Constants
 from managers import GameManager
 from game import SpritesManager
@@ -54,7 +55,6 @@ class Enemy(Sprite):
 
     def set_drown(self):
         self.dir = 'drown'
-        self.z_order = ZHeights.UNDERWATER_OBJECT_HEIGHT
 
     def update(self, menu: Menu, game_manager: GameManager.GameManager,
                sprite_manager: SpritesManager.GroupSpritesManager):
@@ -62,6 +62,14 @@ class Enemy(Sprite):
         if not self.dir == "drown":
             self.collisions(sprite_manager)
             self.animate()
+
+        # Smooth drowning
+        if self.dir == "drown" and self.z_order > ZHeights.UNDERWATER_OBJECT_HEIGHT:
+            self.z_order -= Constants.DROWN_SPEED
+            if self.z_order < ZHeights.UNDERWATER_OBJECT_HEIGHT:
+                self.z_order = ZHeights.UNDERWATER_OBJECT_HEIGHT
+                sprite_manager.add_sprite(get_splash(Constants.cscale(*self.pos), SplashTypes.SPHERE_SMALL))
+                sprite_manager.add_sprite(get_splash(Constants.cscale(*self.pos), SplashTypes.SPHERE_BIG))
 
     def render(self, menu: Menu, game_manager: GameManager.GameManager,
                sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:

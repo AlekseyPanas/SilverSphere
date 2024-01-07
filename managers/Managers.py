@@ -29,16 +29,22 @@ class DelayedAssetLoader:
     @staticmethod
     def convert_preasset(asset: PreAsset) -> pygame.Surface:
         """Transform and convert PreAsset to a pygame surface"""
+        if isinstance(asset.path, pygame.Surface): img = asset.path
+        else: img = pygame.image.load(asset.path)
+
         if asset.size is None:
-            return pygame.image.load(asset.path).convert_alpha()
+            return img.convert_alpha()
         else:
             s = Constants.cscale(*asset.size) if asset.do_resolution_scale else asset.size
-            return pygame.transform.smoothscale(pygame.image.load(asset.path), s).convert_alpha()
+            return pygame.transform.smoothscale(img, s).convert_alpha()
 
     @staticmethod
     def convert_animation_preasset(asset: AnimationPreAsset):
         """Parse spritesheet and scale each frame"""
-        frames = spritesheet2frames(pygame.image.load(asset.path), asset.frame_dims, asset.intermediates, asset.loop)
+        if isinstance(asset.path, pygame.Surface): img = asset.path
+        else: img = pygame.image.load(asset.path)
+
+        frames = spritesheet2frames(img, asset.frame_dims, asset.intermediates, asset.loop)
         parsed_frames = []
         for f in frames:
             if asset.size is None:
@@ -56,8 +62,9 @@ ASSET_LOADER = DelayedAssetLoader()
 class PreAsset:
     """
     do_resolution_scale will compute the scaled size and then transform
+    :param path: Can be a string to a file or a ready surface
     """
-    path: str
+    path: str | pygame.Surface
     size: tuple[int, int] = None
     do_resolution_scale: bool = True
 
