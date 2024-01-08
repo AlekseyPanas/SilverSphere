@@ -18,21 +18,21 @@ The project is complete!:
 ### Planned Features
 Additional features in mind by planned version
 
-#### v3.1
-- Extensive refactoring of sprite game logic, including a fix for cross-sprite mutation
 #### v3.2
-- Database for user-made levels
+- Extensive refactoring of sprite game logic, including a fix for cross-sprite mutation
 #### v3.3
+- Database for user-made levels
+#### v3.4
 - Database for best times on custom and main levels
 - Level select menu displays user's best time and score on each level
 - Total score a sum of main level scores
 - Scores update when you beat a level with a better time / score
-#### v3.4
+#### v3.5
 - Add ability to delete levels
 - Add ability to rename levels
-#### v3.5
-- Add white flash for ball spawning and ball vortex exiting
 #### v3.6
+- Add white flash for ball spawning and ball vortex exiting
+#### v3.7
 - Add a resolution selection menu before booting uo the game 
 
 ### Changelog
