@@ -28,12 +28,16 @@ Additional features in mind by planned version
 - Total score a sum of main level scores
 - Scores update when you beat a level with a better time / score
 #### v3.4
+- Add ability to delete levels
+- Add ability to rename levels
+#### v3.5
 - Add white flash for ball spawning and ball vortex exiting
+#### v3.6
+- Add a resolution selection menu before booting uo the game 
 
 ### Changelog
 
 #### v3.0
-This version is still in development; changelog is subject to change.
 
 Changes
 - Visuals
@@ -66,6 +70,7 @@ Bugs
 - Objects in editor can be moved into an enemy path, such as Vortex or Metal block
 - If player goes onto Vortex while it is opening, the player isn't registered
 - Start of level text is invisible on macs
+- Enemies don't collide with each other
 
 Issues
 - Direct cross-sprite mutation causes unpredictable behavior. 

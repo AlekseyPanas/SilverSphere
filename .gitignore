@@ -1,3 +1,5 @@
 venv
 .idea
 __pycache__
+customlevels.json
+customlevels.json.bak
