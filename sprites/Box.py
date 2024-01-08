@@ -1,6 +1,6 @@
 from __future__ import annotations
 import pygame
-from Constants import path2asset, cscale
+from Constants import path2asset, cscale, is_pos_eq
 import Constants
 import Menu
 from game.Renderers import RenderData
@@ -78,25 +78,25 @@ class Box(Sprite.Sprite):
         for box in sprite_manager.get_groups([Box, IceCube]):
             box: Box
             if not box.state == 'drown':
-                if allowed_movement[0] and box.coords == [self.coords[0] + 1, self.coords[1]]:
+                if allowed_movement[0] and is_pos_eq(box.coords, [self.coords[0] + 1, self.coords[1]]):
                     allowed_movement[0] = False
-                if allowed_movement[1] and box.coords == [self.coords[0] - 1, self.coords[1]]:
+                if allowed_movement[1] and is_pos_eq(box.coords,[self.coords[0] - 1, self.coords[1]]):
                     allowed_movement[1] = False
-                if allowed_movement[2] and box.coords == [self.coords[0], self.coords[1] - 1]:
+                if allowed_movement[2] and is_pos_eq(box.coords,[self.coords[0], self.coords[1] - 1]):
                     allowed_movement[2] = False
-                if allowed_movement[3] and box.coords == [self.coords[0], self.coords[1] + 1]:
+                if allowed_movement[3] and is_pos_eq(box.coords,[self.coords[0], self.coords[1] + 1]):
                     allowed_movement[3] = False
 
         # Detects Vortex in all 4 directions
         vortex: Vortex = sprite_manager.get_single(Vortex)
         if vortex.state == 'stationary':
-            if allowed_movement[0] and vortex.coords == [self.coords[0] + 1, self.coords[1]]:
+            if allowed_movement[0] and is_pos_eq(vortex.coords, [self.coords[0] + 1, self.coords[1]]):
                 allowed_movement[0] = False
-            if allowed_movement[1] and vortex.coords == [self.coords[0] - 1, self.coords[1]]:
+            if allowed_movement[1] and is_pos_eq(vortex.coords, [self.coords[0] - 1, self.coords[1]]):
                 allowed_movement[1] = False
-            if allowed_movement[2] and vortex.coords == [self.coords[0], self.coords[1] - 1]:
+            if allowed_movement[2] and is_pos_eq(vortex.coords, [self.coords[0], self.coords[1] - 1]):
                 allowed_movement[2] = False
-            if allowed_movement[3] and vortex.coords == [self.coords[0], self.coords[1] + 1]:
+            if allowed_movement[3] and is_pos_eq(vortex.coords, [self.coords[0], self.coords[1] + 1]):
                 allowed_movement[3] = False
 
         # Returns an array which says whether or not movement in a certain direction is allowed

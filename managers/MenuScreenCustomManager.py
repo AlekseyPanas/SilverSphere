@@ -60,7 +60,7 @@ class MenuScreenCustomManager(MenuScreenManager):
         p = Constants.path2file(self.CUSTOM_LEVELS_FILENAME)
         shutil.copy(p, Constants.path2file(self.CUSTOM_LEVELS_FILENAME + ".bak"))
         with open(p, "w") as file:
-            json.dump([s.to_dict() for s in self.custom_levels], file)
+            json.dump([s.to_dict() for s in self.custom_levels], file, indent=2)
 
     def add_level(self, level: LevelData):
         """Add a new custom level, save the levels, and regenerate buttons"""

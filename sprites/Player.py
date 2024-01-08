@@ -7,7 +7,7 @@ from sprites import Box
 from sprites.Vortex import Vortex
 from sprites.InflateSurface import get_splash, SplashTypes
 from managers.Managers import PreAsset, AnimationPreAsset, ASSET_LOADER, register_assets
-from Constants import spritesheet2frames, path2asset
+from Constants import spritesheet2frames, path2asset, is_pos_eq
 import Constants
 from managers import GameManager
 from game import SpritesManager
@@ -246,19 +246,19 @@ class Player(Sprite.Sprite):
         for box in sprite_manager.get_groups([Box.Box, Box.IceCube]):
             if not box.state == 'drown':
                 box_detect = box.detect(game_manager, sprite_manager)
-                if allowed_movement[0] and box.coords == [self.coords[0] + 1, self.coords[1]]:
+                if allowed_movement[0] and is_pos_eq(box.coords, [self.coords[0] + 1, self.coords[1]]):
                     self.near_boxes[0] = box
                     if not box_detect[0]:
                         allowed_movement[0] = False
-                if allowed_movement[1] and box.coords == [self.coords[0] - 1, self.coords[1]]:
+                if allowed_movement[1] and is_pos_eq(box.coords, [self.coords[0] - 1, self.coords[1]]):
                     self.near_boxes[1] = box
                     if not box_detect[1]:
                         allowed_movement[1] = False
-                if allowed_movement[2] and box.coords == [self.coords[0], self.coords[1] - 1]:
+                if allowed_movement[2] and is_pos_eq(box.coords, [self.coords[0], self.coords[1] - 1]):
                     self.near_boxes[2] = box
                     if not box_detect[2]:
                         allowed_movement[2] = False
-                if allowed_movement[3] and box.coords == [self.coords[0], self.coords[1] + 1]:
+                if allowed_movement[3] and is_pos_eq(box.coords, [self.coords[0], self.coords[1] + 1]):
                     self.near_boxes[3] = box
                     if not box_detect[3]:
                         allowed_movement[3] = False

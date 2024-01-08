@@ -54,6 +54,10 @@ class Stack:
         return len(self.items)
 
 
+def is_pos_eq(pos1: tuple | list, pos2: tuple | list):
+    return pos1[0] == pos2[0] and pos1[1] == pos2[1]
+
+
 def cscale(*coordinate, divisors=(1030, 700)):
     """Rounded re-scaling of values from provided resolution to current"""
     if len(coordinate) > 1:
