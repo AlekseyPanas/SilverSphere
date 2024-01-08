@@ -24,8 +24,7 @@ class X_Box_Tile(Sprite):
     def update(self, menu: Menu, game_manager: GameManager.GameManager,
                sprite_manager: SpritesManager.GroupSpritesManager): pass
 
-    def render(self, menu: Menu, game_manager: GameManager.GameManager,
-               sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
+    def render(self, menu: Menu, sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
         return RenderData(self.z_order, self.BOX_X_TILE_IMAGE, self.BOX_X_TILE_IMAGE.get_rect(center=Constants.cscale(*self.pos)))
 
     def get_shadow(self) -> tuple[pygame.Surface, tuple[float, float]] | None:
@@ -33,6 +32,5 @@ class X_Box_Tile(Sprite):
 
 
 class X_Ice_Tile(X_Box_Tile):
-    def render(self, menu: Menu, game_manager: GameManager.GameManager,
-               sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
+    def render(self, menu: Menu, sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
         return RenderData(self.z_order, self.ICE_X_TILE_IMAGE, self.ICE_X_TILE_IMAGE.get_rect(center=Constants.cscale(*self.pos)))

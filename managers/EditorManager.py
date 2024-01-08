@@ -27,7 +27,7 @@ class Tools(IntEnum):
 @register_assets(ASSET_LOADER)
 class EditorManager(Manager):
     """Manager for Birthday Screen"""
-    TOOL_SIZE = (70, 70)
+    TOOL_SIZE = (60, 60)
 
     TOOL_BOX_IMG: pygame.Surface = PreAsset(path2asset("images/Wooden crate.png"), TOOL_SIZE)
     TOOL_METAL_IMG: pygame.Surface = PreAsset(path2asset("images/iron.png"), TOOL_SIZE)
@@ -50,6 +50,8 @@ class EditorManager(Manager):
                               self.TOOL_BOX_X_IMG, self.TOOL_ICE_X_IMG, self.TOOL_ENEMY_IMG, self.TOOL_PLAYER_IMG,
                               self.TOOL_VORTEX_IMG, self.TOOL_DELETE_IMG]
 
+        self.__selected_tool = Tools.BOX
+
         self.__level_data_ref = level_data_ref
         self.__custom_manager = custom_levels_manager
 
@@ -66,8 +68,11 @@ class EditorManager(Manager):
     def run(self, screen: pygame.Surface, menu: Menu):
         self.__sprite_manager.render_level(menu, self.__game_surf)
         screen.blit(self.__game_surf, Constants.cscale(15, 15))
+        self.__draw_toolbar(screen)
 
-    def __draw_toolbar(self):
-        pass
+    def __draw_toolbar(self, screen: pygame.Surface):
+        for i in range(len(Tools)):
+            screen.blit(self.__tool_assets[i], Constants.cscale(i * 80 + 60, 630))
+        pygame.draw.rect(screen, (255, 255, 255), Constants.cscale(self.__selected_tool * 80 + 60, 630, 70, 70), Constants.cscale(4), )
 
     def do_persist(self) -> bool: return False
