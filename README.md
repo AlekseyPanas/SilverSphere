@@ -47,7 +47,7 @@ Changes
   - Added splash effect for objects dropped in water
   - Designed new original metal box asset
 - Game
-  - [ ] Added custom level editor
+  - Added custom level editor
   - Drowned enemy spheres now act as platforms
 - Bug Fixes
   - Fixed X tiles drawn above metal boxes
@@ -64,6 +64,7 @@ Bugs
 - If a level is beaten with a better time, no additional score is given
 - Enemy sprite animation is not using intermediates
 - Objects in editor can be moved into an enemy path, such as Vortex or Metal block
+- If player goes onto Vortex while it is opening, the player isn't registered
 
 Issues
 - Direct cross-sprite mutation causes unpredictable behavior. 
