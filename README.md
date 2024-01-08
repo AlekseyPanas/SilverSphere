@@ -63,6 +63,7 @@ Changes
 Bugs
 - If a level is beaten with a better time, no additional score is given
 - Enemy sprite animation is not using intermediates
+- Objects in editor can be moved into an enemy path, such as Vortex or Metal block
 
 Issues
 - Direct cross-sprite mutation causes unpredictable behavior. 

@@ -141,3 +141,4 @@ class MenuScreenCustomManager(MenuScreenManager):
                         new_lvl_name = self.__level_name_typefield.text.strip().upper()
                         self.add_level(LevelData.generate_default(new_lvl_name))
                         self.__cur_page = len(self.__pages) - 1
+                        self.__level_name_typefield.clear_field()

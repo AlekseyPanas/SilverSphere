@@ -199,7 +199,7 @@ class GameManager(Manager):
             for x in x_ice_tiles:
                 satisfied = False
                 for box in self.__sprites_manager.get_group(IceCube):
-                    if box.coords == x.coords:
+                    if box.coords[0] == x.coords[0] and box.coords[1] == x.coords[1]:
                         satisfied = True
                 if not satisfied:
                     x_satisfaction = False
@@ -207,7 +207,7 @@ class GameManager(Manager):
             for x in x_box_tiles:
                 satisfied = False
                 for box in self.__sprites_manager.get_groups([IceCube, Box]):
-                    if box.coords == x.coords:
+                    if box.coords[0] == x.coords[0] and box.coords[1] == x.coords[1]:
                         satisfied = True
                 if not satisfied:
                     x_satisfaction = False
