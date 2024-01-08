@@ -3,16 +3,16 @@ import pygame
 import Menu
 from abc import abstractmethod
 from game.Renderers import RenderData
-from managers import GameManager
 from game import SpritesManager
+from managers import GameManager
 
 
 class ZHeights:
     MARBLE_HEIGHT = 0.0
     WATER_SHADOW_HEIGHT = 0.01
+    WATER_SPLASH_HEIGHT = 0.99
     UNDERWATER_OBJECT_HEIGHT = 1.0
     WATER_HEIGHT = 1.01
-    WATER_SPLASH_HEIGHT = 1.02
     GROUND_HEIGHT = 1.5
     FLAT_GROUND_SHADOW_HEIGHT = 1.50001
     X_HEIGHT = 1.5001
@@ -44,13 +44,12 @@ class Sprite:
         return (coords[0] * 50) + 25, (coords[1] * 50) + 25
 
     @abstractmethod
-    def update(self, menu: Menu, game_manager: GameManager.GameManager,
+    def update(self, menu: Menu, game_manager: GameManager,
                sprite_manager: SpritesManager.GroupSpritesManager):
         """Update game data of this sprite object and add/remove any sprites via sprite_manager"""
 
     @abstractmethod
-    def render(self, menu: Menu, game_manager: GameManager.GameManager,
-               sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
+    def render(self, menu: Menu, sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
         """Return object's render data"""
 
     @abstractmethod

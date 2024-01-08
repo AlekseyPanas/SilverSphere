@@ -2,7 +2,8 @@ import pygame
 
 
 class Button:
-    def __init__(self, top_left_corner, size, image, box=False, border_color=(0, 0, 0), text_color=(40, 40, 40),
+    def __init__(self, top_left_corner: tuple[int, int], size: tuple[int, int],
+                 image: pygame.Surface | None, box=False, border_color=(0, 0, 0), text_color=(40, 40, 40),
                  fill_color=(255, 255, 255), text="", border_thickness=0, font=None, state_quantity=3):
         # Position of top left corner of button.
         self.top_left = top_left_corner

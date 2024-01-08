@@ -82,8 +82,7 @@ class InflateSurfaceSprite(Sprite):
         super().__init__(lifetime, z_order)
         self.__inflate_surf = InflateSurface(z_order, surface, start_scale, stop_scale, scale_time, center, fade, initial_opacity, delay_inflation)
 
-    def render(self, menu: Menu, game_manager: GameManager.GameManager,
-               sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
+    def render(self, menu: Menu, sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
         return self.__inflate_surf.render()
 
     def get_shadow(self) -> pygame.Surface | None: return None
@@ -102,6 +101,10 @@ class SplashTypes(IntEnum):
     BOX_BIG = 3
 
 
+STARTING_OPACITY = 200
+STARTING_SCALE = 0.1
+
+
 @register_assets(ASSET_LOADER)
 class SplashSphereSmall(InflateSurfaceSprite):
     __rad = 120
@@ -115,7 +118,7 @@ class SplashSphereSmall(InflateSurfaceSprite):
         """
         :param center: resolution-scaled center
         """
-        super().__init__(None, ZHeights.WATER_SPLASH_HEIGHT, self.SPLASH, 0, 1, 40, center, fade=True, initial_opacity=150)
+        super().__init__(None, ZHeights.WATER_SPLASH_HEIGHT, self.SPLASH, STARTING_SCALE, 1, 40, center, fade=True, initial_opacity=STARTING_OPACITY)
 
 
 @register_assets(ASSET_LOADER)
@@ -131,7 +134,7 @@ class SplashSphereBig(InflateSurfaceSprite):
         """
         :param center: resolution-scaled center
         """
-        super().__init__(None, ZHeights.WATER_SPLASH_HEIGHT, self.SPLASH, 0, 1, 30, center, fade=True, initial_opacity=150)
+        super().__init__(None, ZHeights.WATER_SPLASH_HEIGHT, self.SPLASH, STARTING_SCALE, 1, 30, center, fade=True, initial_opacity=STARTING_OPACITY)
 
 
 @register_assets(ASSET_LOADER)
@@ -147,7 +150,7 @@ class SplashBoxSmall(InflateSurfaceSprite):
         """
         :param center: resolution-scaled center
         """
-        super().__init__(None, ZHeights.WATER_SPLASH_HEIGHT, self.SPLASH, 0, 1, 40, center, fade=True, initial_opacity=150)
+        super().__init__(None, ZHeights.WATER_SPLASH_HEIGHT, self.SPLASH, STARTING_SCALE, 1, 40, center, fade=True, initial_opacity=STARTING_OPACITY)
 
 
 @register_assets(ASSET_LOADER)
@@ -165,7 +168,7 @@ class SplashBoxBig(InflateSurfaceSprite):
         """
         super().__init__(None, ZHeights.WATER_SPLASH_HEIGHT,
                          pygame.transform.rotate(self.SPLASH, random.randint(-20, 20)),
-                         0, 1, 30, center, fade=True, initial_opacity=150)
+                         STARTING_SCALE, 1, 30, center, fade=True, initial_opacity=STARTING_OPACITY)
 
 
 def get_splash(center: tuple[int, int], splash_type: SplashTypes):

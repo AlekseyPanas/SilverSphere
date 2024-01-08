@@ -69,7 +69,7 @@ class MenuScreenLevelSelectManager(MenuScreenManager):
                 if event.type == pygame.MOUSEBUTTONUP:
                     if button.is_clicked(event.pos):
                         if idx == 0 or menu.completed[idx - 1]:
-                            menu.switch_state(Menu.MenuStates.GAME, {"level_idx": idx})
+                            menu.switch_state(Menu.MenuStates.GAME, {"level_json": menu.get_level_json_at_index(idx), "level_idx": idx})
 
             if event.type == pygame.MOUSEBUTTONUP:
                 if self.back_button.is_clicked(event.pos):

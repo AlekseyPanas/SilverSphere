@@ -5,7 +5,7 @@ from Constants import path2asset, spritesheet2frames
 import Menu
 from game.Renderers import RenderData
 from managers.Managers import PreAsset, ASSET_LOADER, register_assets
-from sprites.Sprite import Sprite
+from sprites import Sprite
 from sprites import Box
 from sprites.AnimationEffect import ExplosionAnimation
 from managers import GameManager
@@ -13,7 +13,7 @@ from game import SpritesManager
 
 
 @register_assets(ASSET_LOADER)
-class Vortex(Sprite):
+class Vortex(Sprite.Sprite):
     # Vortex animations
     VORTEX_TILE_IMAGE: pygame.Surface = PreAsset(path2asset("images/vortex anim.png"), (770, 70))
     VORTEX_OPEN_IMAGE: pygame.Surface = PreAsset(path2asset("images/vortex open.png"), (630, 70))
@@ -24,7 +24,7 @@ class Vortex(Sprite):
         super().__init__(lifetime, z_order)
 
         self.coords = coords
-        self.pos = Sprite.get_center_from_coords(self.coords)
+        self.pos = Sprite.Sprite.get_center_from_coords(self.coords)
         self.state = 'blank'
 
         # Vortex animation images
@@ -98,8 +98,7 @@ class Vortex(Sprite):
                     self.state = 'blank'
                 self.set_image = False
 
-    def render(self, menu: Menu, game_manager: GameManager.GameManager,
-               sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
+    def render(self, menu: Menu, sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
         if self.state == "blank" or self.current_image is None:
             return None
         s = self.current_image[self.current_index]

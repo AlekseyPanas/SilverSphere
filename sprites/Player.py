@@ -2,7 +2,7 @@ from __future__ import annotations
 import pygame
 import Menu
 from game.Renderers import RenderData
-from sprites.Sprite import Sprite, ZHeights
+from sprites import Sprite
 from sprites import Box
 from sprites.Vortex import Vortex
 from sprites.InflateSurface import get_splash, SplashTypes
@@ -16,7 +16,7 @@ import time
 
 
 @register_assets(ASSET_LOADER)
-class Player(Sprite):
+class Player(Sprite.Sprite):
     ANIM_INTERMEDIATES = 1
 
     # Player Animation images
@@ -41,7 +41,7 @@ class Player(Sprite):
 
         # position and grid coords
         self.coords = coords
-        self.pos = list(Sprite.get_center_from_coords(self.coords))
+        self.pos = list(Sprite.Sprite.get_center_from_coords(self.coords))
 
         # Key press stack for controlling ball
         self.STACK = Constants.Stack()
@@ -101,15 +101,14 @@ class Player(Sprite):
         self.move(game_manager, sprite_manager)
 
         # Smooth drowning
-        if self.state == "drown" and self.z_order > ZHeights.UNDERWATER_OBJECT_HEIGHT:
+        if self.state == "drown" and self.z_order > Sprite.ZHeights.UNDERWATER_OBJECT_HEIGHT:
             self.z_order -= Constants.DROWN_SPEED
-            if self.z_order <= ZHeights.UNDERWATER_OBJECT_HEIGHT:
-                self.z_order = ZHeights.UNDERWATER_OBJECT_HEIGHT
+            if self.z_order <= Sprite.ZHeights.UNDERWATER_OBJECT_HEIGHT:
+                self.z_order = Sprite.ZHeights.UNDERWATER_OBJECT_HEIGHT
                 sprite_manager.add_sprite(get_splash(Constants.cscale(*self.pos), SplashTypes.SPHERE_SMALL))
                 sprite_manager.add_sprite(get_splash(Constants.cscale(*self.pos), SplashTypes.SPHERE_BIG))
 
-    def render(self, menu: Menu, game_manager: GameManager.GameManager,
-               sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
+    def render(self, menu: Menu, sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
         s: pygame.Surface | None = None
 
         # When stationary
@@ -127,8 +126,8 @@ class Player(Sprite):
     def get_drown_scale(zorder: float, surf: pygame.Surface):
         """If in water, return scaled surface based on zorder"""
         # Ball gets slightly smaller if drowned
-        if zorder < ZHeights.ON_GROUND_OBJECT_HEIGHT:
-            diff = (ZHeights.ON_GROUND_OBJECT_HEIGHT - zorder) / 15
+        if zorder < Sprite.ZHeights.ON_GROUND_OBJECT_HEIGHT:
+            diff = (Sprite.ZHeights.ON_GROUND_OBJECT_HEIGHT - zorder) / 15
             return pygame.transform.smoothscale(surf, tuple(i * (1 - (diff * 0.4)) for i in surf.get_size()))
         return surf
 
@@ -287,4 +286,4 @@ class Player(Sprite):
             # State drown to make player disappear under the tiles
             self.kill = True
             # starts timer to open post level menu
-            self.z_order = ZHeights.UNDERWATER_OBJECT_HEIGHT
+            self.z_order = Sprite.ZHeights.UNDERWATER_OBJECT_HEIGHT

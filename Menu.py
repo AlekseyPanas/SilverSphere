@@ -1,3 +1,4 @@
+from __future__ import annotations
 import Constants
 import json
 import pygame
@@ -7,6 +8,8 @@ from managers.Managers import Manager, ASSET_LOADER
 from managers.BirthdayManager import BirthdayManager
 from managers.MenuScreenMainManager import MenuScreenMainManager
 from managers.MenuScreenLevelSelectManager import MenuScreenLevelSelectManager
+from managers.MenuScreenCustomManager import MenuScreenCustomManager
+from managers import EditorManager
 from managers.GameManager import GameManager
 import inspect
 
@@ -17,13 +20,15 @@ class MenuStates(IntEnum):
     CUSTOMLEVELSEL = 2
     BIRTHDAY = 3
     GAME = 4
+    EDITOR = 5
 
 
 STATE_TO_CLASS = {MenuStates.MAIN: MenuScreenMainManager,
                   MenuStates.LEVELSEL: MenuScreenLevelSelectManager,
-                  MenuStates.CUSTOMLEVELSEL: Manager,
+                  MenuStates.CUSTOMLEVELSEL: MenuScreenCustomManager,
                   MenuStates.BIRTHDAY: BirthdayManager,
-                  MenuStates.GAME: GameManager}
+                  MenuStates.GAME: GameManager,
+                  MenuStates.EDITOR: EditorManager.EditorManager}
 
 
 class Menu:
@@ -67,9 +72,13 @@ class Menu:
         return self.levels[idx]
 
     def save_game(self):
+        """Save progress data and custom levels"""
         with open(Constants.path2file("data.json"), "w") as file:
             completed = len([x for x in self.completed if x]) - 1
             json.dump({"highest": completed, "score": self.score}, file)
+        if self.__managers[MenuStates.CUSTOMLEVELSEL] is not None:
+            m: MenuScreenCustomManager = self.__managers[MenuStates.CUSTOMLEVELSEL]
+            m.save_levels()
 
     def switch_state(self, new_state: MenuStates, param_dict=dict()):
         """Used by manager classes to change screens"""
@@ -86,12 +95,11 @@ class Menu:
             self.__managers[self.menu_state.value] = clss(self, **{k: self.__switch_params[k] for k in self.__switch_params if k in list(inspect.signature(clss).parameters.keys())})
             self.__switch_params = dict()
 
-    def handle_exit(self, *args, **kwargs):
+    def handle_exit(self):
         """Called when main loop finishes under any circumstances"""
         self.save_game()
-        self.__running = False
 
-    def stop_game(self):
+    def stop_game(self, *args, **kwargs):
         """Set flag to stop game on next loop iteration"""
         self.__running = False
 

@@ -1,7 +1,7 @@
 import pygame
 import Constants
 from Constants import path2asset, cscale, clipper_from_surface
-from sprites.Player import Player
+from sprites import Player
 from sprites.X import X_Box_Tile, X_Ice_Tile
 from sprites.StaticImage import StaticImage
 from sprites.Vortex import Vortex
@@ -32,7 +32,7 @@ class LevelGenerator:
         """Add all sprites to the passed sprite manager"""
         tile_grid, metal_grid, water_shadow, grid_clipper, ground_shadow = self.__generate_grid()
 
-        sprite_manager.add_sprite(Player(None, ZHeights.ON_GROUND_OBJECT_HEIGHT, self.__level_json["player_start"]))  # Add player
+        sprite_manager.add_sprite(Player.Player(None, ZHeights.ON_GROUND_OBJECT_HEIGHT, self.__level_json["player_start"]))  # Add player
         sprite_manager.add_sprite(StaticImage(None, ZHeights.GROUND_HEIGHT, tile_grid))  # Add ground tiles
         sprite_manager.add_sprite(StaticImage(None, ZHeights.ON_GROUND_OBJECT_HEIGHT, metal_grid))  # Add metal boxes
         sprite_manager.add_sprite(StaticImage(None, ZHeights.MARBLE_HEIGHT, self.MARBLE_IMAGE))  # Add marble

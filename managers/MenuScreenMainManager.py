@@ -13,23 +13,27 @@ class MenuScreenMainManager(MenuScreenManager):
     PLAY_BUTTON: pygame.Surface = PreAsset(path2asset("images/menu_play_button.png"))
     LEVEL_BUTTON: pygame.Surface = PreAsset(path2asset("images/menu_levels_button.png"))
     QUIT_BUTTON: pygame.Surface = PreAsset(path2asset("images/menu_quit_button.png"))
-    BUTTON_SIZE = (200, 67)
+    COMMUNITY_BUTTON: pygame.Surface = PreAsset(path2asset("images/menu_community_button.png"))
+    BUTTON_SIZE = (170, 50)
 
     def __init__(self, menu: Menu):
         super().__init__(menu)
         # Instantiate Play button and other buttons
-        self.play_button = Button.Button(Constants.cscale(150, 205), Constants.cscale(*self.BUTTON_SIZE),
+        self.play_button = Button.Button(Constants.cscale(150, 200), Constants.cscale(*self.BUTTON_SIZE),
                                          self.PLAY_BUTTON, state_quantity=2)
-        self.level_select_button = Button.Button(Constants.cscale(150, 295), Constants.cscale(*self.BUTTON_SIZE),
+        self.level_select_button = Button.Button(Constants.cscale(150, 270), Constants.cscale(*self.BUTTON_SIZE),
                                                  self.LEVEL_BUTTON, state_quantity=2)
-        self.quit_button = Button.Button(Constants.cscale(150, 385), Constants.cscale(*self.BUTTON_SIZE),
+        self.quit_button = Button.Button(Constants.cscale(150, 410), Constants.cscale(*self.BUTTON_SIZE),
                                          self.QUIT_BUTTON, state_quantity=2)
+        self.community_button = Button.Button(Constants.cscale(150, 340), Constants.cscale(*self.BUTTON_SIZE),
+                                              self.COMMUNITY_BUTTON, state_quantity=2)
 
     def run_menu_foreground(self, screen: pygame.Surface, menu: Menu):
         # Render buttons
         self.play_button.draw_and_hover(screen, pygame.mouse.get_pos())
         self.level_select_button.draw_and_hover(screen, pygame.mouse.get_pos())
         self.quit_button.draw_and_hover(screen, pygame.mouse.get_pos())
+        self.community_button.draw_and_hover(screen, pygame.mouse.get_pos())
 
         # Draws score
         rendered_text = Constants.get_impact(Constants.cscale(35)).render("Score: " + str(menu.score), False, (0, 0, 0))
@@ -42,7 +46,7 @@ class MenuScreenMainManager(MenuScreenManager):
                     # Takes you to the next uncompleted level
                     for idx in range(len(menu.completed)):
                         if not menu.completed[idx]:
-                            menu.switch_state(Menu.MenuStates.GAME, {"level_idx": idx})
+                            menu.switch_state(Menu.MenuStates.GAME, {"level_json": menu.get_level_json_at_index(idx), "level_idx": idx})
                             break
 
                 elif self.level_select_button.is_clicked(event.pos):
@@ -50,3 +54,6 @@ class MenuScreenMainManager(MenuScreenManager):
 
                 elif self.quit_button.is_clicked(event.pos):
                     menu.stop_game()
+
+                elif self.community_button.is_clicked(event.pos):
+                    menu.switch_state(Menu.MenuStates.CUSTOMLEVELSEL)

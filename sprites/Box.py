@@ -5,7 +5,7 @@ import Constants
 import Menu
 from game.Renderers import RenderData
 from managers.Managers import PreAsset, ASSET_LOADER, register_assets
-from sprites.Sprite import Sprite, ZHeights
+from sprites import Sprite
 from sprites.Vortex import Vortex
 from sprites import Player
 from sprites.InflateSurface import get_splash, SplashTypes
@@ -14,7 +14,7 @@ from game import SpritesManager
 
 
 @register_assets(ASSET_LOADER)
-class Box(Sprite):
+class Box(Sprite.Sprite):
     BOX_IMAGE: pygame.Surface = PreAsset(path2asset("images/Wooden crate.png"), (50, 50))
     ICE_IMAGE: pygame.Surface = PreAsset(path2asset("images/icecube.png"), (50, 50))
     SHADOW_BOX: pygame.Surface = PreAsset(path2asset("images/box_shadow.png"), (100, 100))
@@ -24,7 +24,7 @@ class Box(Sprite):
 
         # Position and state
         self.coords = coords
-        self.pos = list(Sprite.get_center_from_coords(coords))
+        self.pos = list(Sprite.Sprite.get_center_from_coords(coords))
         self.state = "stationary"
 
         # Used to track movement
@@ -38,15 +38,14 @@ class Box(Sprite):
         self.move(game_manager, sprite_manager)
 
         # Smooth drowning
-        if self.state == "drown" and self.z_order > ZHeights.UNDERWATER_OBJECT_HEIGHT:
+        if self.state == "drown" and self.z_order > Sprite.ZHeights.UNDERWATER_OBJECT_HEIGHT:
             self.z_order -= Constants.DROWN_SPEED
-            if self.z_order <= ZHeights.UNDERWATER_OBJECT_HEIGHT:
-                self.z_order = ZHeights.UNDERWATER_OBJECT_HEIGHT
+            if self.z_order <= Sprite.ZHeights.UNDERWATER_OBJECT_HEIGHT:
+                self.z_order = Sprite.ZHeights.UNDERWATER_OBJECT_HEIGHT
                 sprite_manager.add_sprite(get_splash(Constants.cscale(*self.pos), SplashTypes.BOX_SMALL))
                 sprite_manager.add_sprite(get_splash(Constants.cscale(*self.pos), SplashTypes.BOX_BIG))
 
-    def render(self, menu: Menu, game_manager: GameManager.GameManager,
-               sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
+    def render(self, menu: Menu, sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
         return RenderData(self.z_order, self.BOX_IMAGE, self.BOX_IMAGE.get_rect(center=tuple(cscale(*self.pos))))
 
     def get_shadow(self) -> tuple[pygame.Surface, tuple[float, float]] | None:
@@ -152,8 +151,7 @@ class Box(Sprite):
 
 
 class IceCube(Box):
-    def render(self, menu: Menu, game_manager: GameManager.GameManager,
-               sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
+    def render(self, menu: Menu, sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
         return RenderData(self.z_order, self.ICE_IMAGE, self.ICE_IMAGE.get_rect(center=cscale(*self.pos)))
 
     def move(self, game_manager: GameManager.GameManager, sprite_manager: SpritesManager.GroupSpritesManager):

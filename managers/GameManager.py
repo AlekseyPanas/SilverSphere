@@ -5,8 +5,8 @@ import Menu
 from Constants import cscale, path2asset
 import Constants
 from game.Renderers import ZHeapRenderer
-from game.SpritesManager import GroupSpritesManager
-from game.LevelGenerator import LevelGenerator
+from game import SpritesManager
+from game import LevelGenerator
 from Button import Button
 from sprites.Vortex import Vortex
 from sprites.X import X_Ice_Tile, X_Box_Tile
@@ -43,17 +43,17 @@ class GameManager(Manager):
 
     TICKS_UNTIL_RESET = 50
 
-    def __init__(self, menu: Menu, level_idx: int = 0):
+    def __init__(self, menu: Menu, level_json: dict, level_idx: int | None = None):
         super().__init__(menu)
         # JSON level data
-        self.__level_idx = level_idx
-        self.__level_json = menu.get_level_json_at_index(level_idx)  # dictionary of level object (see levels.json)
+        self.__level_idx: int | None = level_idx  # None if custom
+        self.__level_json = level_json  # dictionary of level object (see levels.json)
         self.__layout = copy.deepcopy(self.__level_json["layout"])
 
         # Core game objects
         self.__game_screen = pygame.Surface(self.GRID_PIXELS)  # surface for game
         self.__renderer = ZHeapRenderer()  # Basic renderer using heap with z-order priority
-        self.__sprites_manager = GroupSpritesManager(self.__level_json)  # Stores game sprites
+        self.__sprites_manager = SpritesManager.GroupSpritesManager(self.__level_json, self.__renderer)  # Stores game sprites
 
         # Game state tracking
         self.__start_time = -1
@@ -72,7 +72,7 @@ class GameManager(Manager):
         self.__post_level_popup_surf = self.__generate_post_popup()
 
         # Initialize level
-        LevelGenerator(self.__level_json).generate_sprites(self.__sprites_manager)  # Generate level
+        LevelGenerator.LevelGenerator(self.__level_json).generate_sprites(self.__sprites_manager)  # Generate level
         self.__sprites_manager.flush_all()  # Flush manager. The sprites aren't added until flushed
 
         # Useful references for quick access
@@ -92,7 +92,7 @@ class GameManager(Manager):
         if self.__gameover:
             self.__reset_timer += 1
         if self.__reset_timer > self.TICKS_UNTIL_RESET:
-            menu.switch_state(Menu.MenuStates.GAME, {"level_idx": self.__level_idx})
+            menu.switch_state(Menu.MenuStates.GAME, {"level_json": self.__level_json, "level_idx": self.__level_idx})
 
         # Button events
         for event in menu.events:
@@ -105,12 +105,15 @@ class GameManager(Manager):
                     self.__start_time = copy.copy(time.time())
 
                 elif self.__state == GameStates.WON and self.__next_level_button.is_clicked(event.pos):
-                    menu.score += self.__score_gain
-                    menu.completed[self.__level_json["id"] - 1] = True
-                    if self.__level_json["id"] + 1 > len(menu.levels):
+                    if self.__level_idx is not None:
+                        menu.score += self.__score_gain
+                        menu.completed[self.__level_json["id"] - 1] = True
+                    if self.__level_idx is None:
+                        menu.switch_state(Menu.MenuStates.CUSTOMLEVELSEL)
+                    elif self.__level_json["id"] + 1 > len(menu.levels):
                         menu.switch_state(Menu.MenuStates.MAIN)
                     else:
-                        menu.switch_state(Menu.MenuStates.GAME, {"level_idx": self.__level_idx + 1})
+                        menu.switch_state(Menu.MenuStates.GAME, {"level_json": menu.get_level_json_at_index(self.__level_idx + 1), "level_idx": self.__level_idx + 1})
                     menu.save_game()
 
         if self.__state == GameStates.IN_GAME:
@@ -127,8 +130,8 @@ class GameManager(Manager):
         self.__sprites_manager.flush_all()
 
         # Drawing
-        self.__render_level(menu)
-        screen.blit(self.__game_screen, (15, 15))
+        self.__sprites_manager.render_level(menu, self.__game_screen)
+        screen.blit(self.__game_screen, cscale(15, 15))
         self.__draw_overlay(screen)
 
         if self.__state == GameStates.NOT_STARTED:
@@ -144,29 +147,6 @@ class GameManager(Manager):
             rendered_text = Constants.get_sans(Constants.cscale(36, divisors=(1030,))).render(str(menu.score + self.__score_gain), True, (0, 0, 0))
             self.__post_level_popup_surf.blit(rendered_text, Constants.cscale(15, 300))
 
-    def __render_level(self, menu: Menu.Menu):
-        """Render every sprite and push to renderer class. Then render whole frame onto game screen"""
-        # #################################################### Potentially extract and remove some params from render method
-        # Add content to frame and register shadows
-        for s in self.__sprites_manager.get_all_sprites():
-            render_output = s.render(menu, self, self.__sprites_manager)
-            if render_output is not None:
-                self.__renderer.add_to_frame(render_output)  # Render sprite
-
-            # Register shadows
-            shad = s.get_shadow()
-            if shad is not None:
-                for shadman in self.__sprites_manager.get_shadow_managers():
-                    shadman.register_shadow(s)
-
-        # Render shadows and add them
-        for shadman in self.__sprites_manager.get_shadow_managers():
-            self.__renderer.add_to_frame(shadman.render(menu, self, self.__sprites_manager))
-
-        # Render frame
-        self.__renderer.render_frame(self.__game_screen)
-        ###########################################################
-
     def __draw_overlay(self, screen: pygame.Surface):
         """Draws game overlay with time, level indicator, and exit button"""
         # Draw black rectangles
@@ -178,8 +158,9 @@ class GameManager(Manager):
             'TIME: ' + str(self.__time_left), True, (0, 0, 0))
         screen.blit(rendered_text, rendered_text.get_rect(center=Constants.cscale(200, 669)))
 
+        level_text = "C" if self.__level_json["id"] == "CUSTOM" else str(self.__level_json["id"])
         rendered_text = Constants.get_sans(Constants.cscale(50, divisors=(1030,))).render(
-            'LEVEL: ' + str(self.__level_json["id"]), True, (0, 0, 0))
+            'LEVEL: ' + level_text, True, (0, 0, 0))
         screen.blit(rendered_text, rendered_text.get_rect(center=Constants.cscale(400, 669)))
 
         # Draw exit button
@@ -246,7 +227,8 @@ class GameManager(Manager):
 
         if vortex.player_in and vortex.state == "blank":
             self.__state = GameStates.WON
-            self.__score_gain = (self.__time_left * 100) if not menu.completed[self.__level_json["id"] - 1] else 0
+            if self.__level_idx is not None:
+                self.__score_gain = (self.__time_left * 100) if not menu.completed[self.__level_json["id"] - 1] else 0
 
     def __generate_pre_popup(self) -> pygame.Surface:
         # LOADS POPUP FOR PRE LEVEL

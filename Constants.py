@@ -7,10 +7,12 @@ pygame.init()
 
 DROWN_SPEED = 0.6  # zorder subtraction per tick for drowning object
 
-SCREEN_SIZE = (1030, 700)
+#SCREEN_SIZE = (1030, 700)
 #SCREEN_SIZE = (515, 350)
-#SCREEN_SIZE = (824, 560)
+SCREEN_SIZE = (824, 560)
 #SCREEN_SIZE = (2060, 1400)
+
+GRID_DIMS = (20, 12)
 
 ROOT_PATH = pathlib.Path(sys.argv[0]).parent
 ASSET_PATH = ROOT_PATH.joinpath("assets")

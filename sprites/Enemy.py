@@ -71,8 +71,7 @@ class Enemy(Sprite):
                 sprite_manager.add_sprite(get_splash(Constants.cscale(*self.pos), SplashTypes.SPHERE_SMALL))
                 sprite_manager.add_sprite(get_splash(Constants.cscale(*self.pos), SplashTypes.SPHERE_BIG))
 
-    def render(self, menu: Menu, game_manager: GameManager.GameManager,
-               sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
+    def render(self, menu: Menu, sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
         s = self.current_image[self.__current_index]
         return RenderData(self.z_order, Player.get_drown_scale(self.z_order, s),
                           s.get_rect(center=tuple(Constants.cscale(*self.pos))))

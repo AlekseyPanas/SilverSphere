@@ -3,8 +3,8 @@ import pygame
 import Constants
 import Menu
 from game import SpritesManager
-from game.Renderers import RenderData
 from managers import GameManager
+from game.Renderers import RenderData
 from sprites.Sprite import Sprite, ZHeights
 from sprites import Box
 from sprites import X, Vortex
@@ -45,11 +45,10 @@ class GroundShadowManager(ShadowManager):
             pygame.draw.rect(self.__clipper, (0, 0, 0, 0),
                              Constants.cscale(sprite.pos[0] - 25, sprite.pos[1] - 25, 50, 50))
 
-    def update(self, menu: Menu, game_manager: GameManager.GameManager,
+    def update(self, menu: Menu, game_manager: GameManager,
                sprite_manager: SpritesManager.GroupSpritesManager): pass
 
-    def render(self, menu: Menu, game_manager: GameManager.GameManager,
-               sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
+    def render(self, menu: Menu, sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
         surf = self.__cur_shadow
         surf: pygame.Surface
         surf.blit(self.__clipper, (0, 0), special_flags=pygame.BLEND_RGBA_SUB)
@@ -106,11 +105,10 @@ class WaterShadowManager(ShadowManager):
                                  world_topleft[1] + shift_factor_y
                              ))
 
-    def update(self, menu: Menu, game_manager: GameManager.GameManager,
+    def update(self, menu: Menu, game_manager: GameManager,
                sprite_manager: SpritesManager.GroupSpritesManager): pass
 
-    def render(self, menu: Menu, game_manager: GameManager.GameManager,
-               sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
+    def render(self, menu: Menu, sprite_manager: SpritesManager.GroupSpritesManager) -> RenderData | None:
         surf = self.__cur_mask.to_surface(setcolor=self.SHADOW_COLOR, unsetcolor=(0, 0, 0))
         surf.set_colorkey((0, 0, 0))
         self.__cur_mask = self.__shadow_mask.copy()

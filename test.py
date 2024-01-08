@@ -154,5 +154,10 @@ def inheritance_test():
     print(B == A)
 
 
+def import_test():
+    for _ in range(10):
+        import math
+
+
 if __name__ == "__main__":
-    spritesheet_parser()
+    import_test()
