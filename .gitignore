@@ -3,3 +3,4 @@ venv
 __pycache__
 customlevels.json
 customlevels.json.bak
+data.json

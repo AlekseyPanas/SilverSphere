@@ -1,4 +1,7 @@
 from __future__ import annotations
+
+import os
+
 import Constants
 import json
 import pygame
@@ -36,6 +39,11 @@ class Menu:
     Primary app manager class
     """
     def __init__(self):
+        # Create data file
+        if "data.json" not in os.listdir(Constants.ROOT_PATH):
+            with open(Constants.path2file("data.json"), "w") as file:
+                json.dump({"highest": -1, "score": 0}, file)
+
         # Pygame window-related variables
         self.events = pygame.event.get()
         self.__running = False

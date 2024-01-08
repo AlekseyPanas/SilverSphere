@@ -1,0 +1,2 @@
+- launching game checks for or otherwise generates a private/public key pair
+-
