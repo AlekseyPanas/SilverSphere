@@ -278,7 +278,7 @@ class Player(Sprite.Sprite):
             self.set_drown()
 
         # Detects if on vortex
-        elif vortex.coords == self.coords and vortex.state == 'stationary':
+        elif is_pos_eq(vortex.coords, self.coords) and vortex.state == 'stationary':
             # sets the vortex to close
             vortex.set_image = False
             vortex.state = 'close'

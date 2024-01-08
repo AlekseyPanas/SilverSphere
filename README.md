@@ -65,6 +65,7 @@ Bugs
 - Enemy sprite animation is not using intermediates
 - Objects in editor can be moved into an enemy path, such as Vortex or Metal block
 - If player goes onto Vortex while it is opening, the player isn't registered
+- Start of level text is invisible on macs
 
 Issues
 - Direct cross-sprite mutation causes unpredictable behavior. 

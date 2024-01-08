@@ -254,7 +254,7 @@ class EditorManager(Manager):
                             self.__sprite_manager.flush_all()
                     case Tools.ICE_X:
                         if self.__is_x_placeable(grid_coords):
-                            self.__level_data_ref.box_x_coords_xy.append(grid_coords)
+                            self.__level_data_ref.ice_x_coords_xy.append(grid_coords)
                             self.__sprite_manager.add_sprite(X_Ice_Tile(None, ZHeights.X_HEIGHT, grid_coords))
                             self.__sprite_manager.flush_all()
                     case Tools.DELETE:
