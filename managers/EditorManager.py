@@ -291,7 +291,7 @@ class EditorManager(Manager):
 
                 self.__previous_grid_pos = grid_coords
         else:  # Mouse unpressed
-            if len(self.__path_in_progress) and self.__path_in_progress[0] == self.__path_in_progress[-1]:
+            if len(self.__path_in_progress) > 1 and self.__path_in_progress[0] == self.__path_in_progress[-1]:
                 self.__level_data_ref.enemies.append(self.__path_list_to_data(self.__path_in_progress))
                 self.__sprite_manager.add_sprite(
                     Enemy(None, ZHeights.ON_GROUND_OBJECT_HEIGHT, self.__path_in_progress[0], ["u"], [5]))

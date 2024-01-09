@@ -56,8 +56,10 @@ class LevelGenerator:
 
         # Adds enemies
         for enemy in self.__level_json["enemies"]:
-            sprite_manager.add_sprite(
-                Enemy(None, ZHeights.ON_GROUND_OBJECT_HEIGHT, enemy["start_pos"], enemy["path_dir"], enemy["path_dist"]))
+            if not len(enemy["path_dir"]):
+                sprite_manager.add_sprite(Enemy(None, ZHeights.ON_GROUND_OBJECT_HEIGHT, enemy["start_pos"], ["r", "l"], [1, 1]))
+            else:
+                sprite_manager.add_sprite(Enemy(None, ZHeights.ON_GROUND_OBJECT_HEIGHT, enemy["start_pos"], enemy["path_dir"], enemy["path_dist"]))
 
         # Add shadow managers
         sprite_manager.add_sprite(WaterShadowManager(ZHeights.WATER_SHADOW_HEIGHT, water_shadow))
