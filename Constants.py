@@ -14,6 +14,8 @@ SCREEN_SIZE = (824, 560)
 
 GRID_DIMS = (20, 12)
 
+VERSION = "3.1"
+
 ROOT_PATH = pathlib.Path(sys.argv[0]).parent
 ASSET_PATH = ROOT_PATH.joinpath("assets")
 
