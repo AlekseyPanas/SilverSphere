@@ -33,8 +33,13 @@ class Box(Sprite.Sprite):
         # dictionary to match strings with index
         self.direction_dict = {'r': 0, 'l': 1, 'u': 2, 'd': 3}
 
+        self.__cached_player_speed = 0
+
     def update(self, menu: Menu, game_manager: GameManager.GameManager,
                sprite_manager: SpritesManager.GroupSpritesManager):
+        if self.__cached_player_speed == 0:
+            self.__cached_player_speed = sprite_manager.get_single(Player.Player).speed
+
         self.move(game_manager, sprite_manager)
 
         # Smooth drowning
@@ -116,7 +121,7 @@ class Box(Sprite.Sprite):
     def move(self, game_manager: GameManager.GameManager, sprite_manager: SpritesManager.GroupSpritesManager):
         # If any directional state is the current state, then run the code
         if self.state == "r" or self.state == "l" or self.state == "u" or self.state == "d":
-            speed = sprite_manager.get_single(Player.Player).speed
+            speed = self.__cached_player_speed
             diff = 50 - self.move_count
             # Moves box continuously in direction corresponding to the state
             if self.state == "r":
@@ -157,7 +162,7 @@ class IceCube(Box):
     def move(self, game_manager: GameManager.GameManager, sprite_manager: SpritesManager.GroupSpritesManager):
         # If any directional state is the current state, then run the code
         if self.state == "r" or self.state == "l" or self.state == "u" or self.state == "d":
-            speed = sprite_manager.get_single(Player.Player).speed
+            speed = self.__cached_player_speed
             diff = 50 - self.move_count
             # Moves box continuously in direction corresponding to the state
             if self.state == "r":
